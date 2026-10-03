@@ -7,6 +7,11 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 No changes yet.
 
+## 0.1.1 — 2026-10-03 (Preview)
+
+- Fixed English translation of wrapped static help text in Settings.
+- First downloadable GitHub Release; v0.1.0 is retained as the initial source tag.
+
 ## 0.1.0 — 2026-10-03 (Preview)
 
 Initial public prerelease. Not all controls have been verified against live equipment.
