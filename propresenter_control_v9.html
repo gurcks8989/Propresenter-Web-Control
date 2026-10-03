@@ -1178,6 +1178,20 @@
         max-width: 160px;
         font-size: 10px;
       }
+      .header-identity {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        min-width: 230px;
+        max-width: 360px;
+        flex: 0 1 340px;
+      }
+      .header-identity .brand { display: flex; align-items: center; gap: 7px; }
+      .header-navigation { display: flex; align-items: center; gap: 6px; min-width: 0; }
+      .header-navigation button { height: 28px; min-height: 28px; padding: 3px 7px; }
+      .header-navigation #openLibrarySearch { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; }
+      .header-navigation .connection { flex: 1; max-width: none; line-height: 1.2; }
       .top .clock {
         font-size: 13px;
       }
@@ -2284,6 +2298,13 @@
           search.textContent = tr("⌕ 검색");
           search.title = tr("전체 라이브러리 검색");
           $(".top").insertBefore(search, $("#toggleLeft"));
+          const identity = document.createElement("div");
+          identity.className = "header-identity";
+          const navigation = document.createElement("div");
+          navigation.className = "header-navigation";
+          $(".top .brand").before(identity);
+          identity.append($(".top .brand"), navigation);
+          navigation.append(search, $("#toggleLeft"), $("#connection"));
           const pane = document.createElement("section");
           pane.className = "preview-shell";
           pane.innerHTML = tr(
@@ -2527,6 +2548,10 @@
           lookField.innerHTML = `<span>${icon("look")}<span>Looks</span></span>`;
           $("#looks").before(lookField);
           lookField.append($("#looks"));
+          $("#openLibrarySearch").classList.remove("icon-only");
+          const searchCaption = document.createElement("span");
+          searchCaption.textContent = tr("검색");
+          $("#openLibrarySearch").append(searchCaption);
         }
         buildShowWorkspace();
         decorateControls();

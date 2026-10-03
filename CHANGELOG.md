@@ -5,7 +5,7 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
-No changes yet.
+- Reorganized the left header into two rows: branding above search, panel toggle and connection status.
 
 ## 0.1.2 — 2026-10-03 (Preview)
 
