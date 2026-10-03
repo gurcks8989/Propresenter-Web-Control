@@ -1228,16 +1228,25 @@
         align-items: center;
         gap: 2px;
         font-size: 10px;
+        justify-content: center;
+        height: 48px;
       }
       .toolbar-look > span {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 0;
       }
+      .toolbar-look > span > span { display: none; }
       .toolbar-look .ui-icon {
-        width: 16px;
-        height: 16px;
+        width: 22px;
+        height: 22px;
       }
+      .top .toolbar-look select { background: transparent; border-color: transparent; text-align: center; height: 22px; padding: 0 4px; }
+      .top #audience, .top #stage { background: transparent; border-color: transparent; color: #ddd; }
+      .top #audience .ui-icon, .top #stage .ui-icon { color: #f26868; }
+      .top #audience.on .ui-icon, .top #stage.on .ui-icon { color: #8ccc57; }
+      .top #audience:disabled .ui-icon, .top #stage:disabled .ui-icon { color: #848891; }
       .workspace {
         height: calc(100dvh - 105px);
         grid-template-rows: minmax(180px, 1fr) minmax(240px, 32%);
@@ -2820,6 +2829,8 @@ function fixture() {
               '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/>',
             clearAll: '<circle cx="12" cy="12" r="9"/><path d="m8 8 8 8M16 8l-8 8"/>',
             videoInput: '<rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor" stroke="none"/><path d="m16 10 6-4v12l-6-4z" fill="currentColor" stroke="none"/>',
+            outputRing: '<circle cx="12" cy="12" r="8" stroke-width="3"/>',
+            broadcast: '<circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.5 5.5a9 9 0 0 0 0 13M18.5 5.5a9 9 0 0 1 0 13"/>',
             leftPanel:
               '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 8h2M5 12h2"/>',
             rightPanel:
@@ -2894,13 +2905,13 @@ function fixture() {
           );
           iconTextButton(
             $('.toolbar-actions [data-show="capture"]'),
-            "capture",
+            "broadcast",
             "Live",
           );
           for (const [id, key, label] of [
             ["toggleMedia", "media", tr("미디어")],
-            ["audience", "foreground", "Audience"],
-            ["stage", "stage", "Stage"],
+            ["audience", "outputRing", "Audience"],
+            ["stage", "outputRing", "Stage"],
             ["settings", "settings", tr("설정")],
             ["toggleRight", "rightPanel", tr("제어 패널")],
           ])
