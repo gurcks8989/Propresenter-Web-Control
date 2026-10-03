@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Localize synthetic demo library, playlist, media and control names plus preview text to the selected language; real user content remains untouched.
+
 - Localize hosted-page banner labels using the selected UI language instead of showing bilingual text.
 
 - Default to English on first launch across the hosted controller, sample demo and standalone HTML; preserve saved language choices.
