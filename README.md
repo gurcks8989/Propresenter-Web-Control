@@ -26,7 +26,7 @@ No build step, external JavaScript dependencies, CDN, or account is required. Th
 
 ## Features
 
-Connection checks must succeed before catalog/status requests begin. **Automatic retries** in Settings defaults to 3 (0–10 allowed), after the initial failed check, at 5-second intervals. At the limit, background connection requests stop and controls remain locked. Choose **Connect** in Settings to start a new connection attempt; a page reload also starts a fresh retry budget unless explicitly disconnected. The toolbar refresh does not bypass an exhausted budget. A successful connection resets the failure count.
+Connection checks must succeed before catalog/status requests begin. **Automatic retries** in Settings defaults to 3 (0–10 allowed), after the initial failed check, at 5-second intervals. At the limit, background connection requests stop and controls remain locked. Choose **Connect** in Settings to start a new connection attempt; a page reload also starts a fresh retry budget unless explicitly disconnected. A successful connection resets the failure count.
 
 - ProPresenter-style Show layout: library/playlist navigation, scrollable slides, independent bottom media browser, and right-side Show Controls.
 - Slide thumbnail / text views, group colors, active cue highlighting, and adjustable thumbnail sizing.
@@ -41,7 +41,7 @@ Connection checks must succeed before catalog/status requests begin. **Automatic
 - Read-only mode blocks control commands; it still reads status and thumbnails.
 - Some controls use **GET** requests to trigger actions. A GET endpoint is not necessarily read-only.
 - Clicking a playlist item or a slide can change live output when read-only mode is off. Library title/search selection only opens a preview; the play button or slide click triggers output. Media card selection alone does not trigger output.
-- Slide lists refresh roughly every two seconds, subject to network latency. Before triggering a slide, the controller checks for changed presentation data. A detected change or failed read blocks that click and asks you to select again.
+- Slides, playback and output status refresh roughly every second. Library, playlist and media catalogs refresh roughly every 30 seconds, as well as on initial connection. Network latency may extend these intervals; polls never overlap. Manual refresh buttons have been removed. Before triggering a slide, the controller checks for changed presentation data. A detected change or failed read blocks that click and asks you to select again.
 - The API triggers slides by index. This check is not atomic: a simultaneous edit between verification and triggering can still race. Avoid reordering slides while another operator is triggering them.
 - The right-side preview is a **slide thumbnail**, not the composited live output with video, Props, and other layers.
 - **Possible Bible view (heuristic):** when the active presentation is named `Default` but the API's existing active playlist item points to a different presentation UUID or has a different name, the controller hides the live slide grid/thumbnail and blocks its slide and previous/next cue controls. Regular presentation tracking restores them automatically. This is not an explicit Bible-state API: it can also match a renamed or temporary presentation. A name mismatch alone, without `Default`, does not enable this guard. Manually opening a library preview remains available; other output controls are not globally locked by this heuristic.

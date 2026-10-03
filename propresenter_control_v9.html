@@ -1606,7 +1606,6 @@
         <i class="led"></i><span>연결 대기</span>
       </div>
       <time class="clock" id="systemClock">--:--:--</time
-      ><button id="refresh" title="목록 새로고침">↻</button
       ><button id="settings">설정</button
       ><button id="toggleRight">제어 패널 ▥</button>
     </header>
@@ -1716,13 +1715,7 @@
                     type="search"
                     placeholder="미디어 검색"
                     aria-label="미디어 검색"
-                  /><button
-                    id="mediaRefresh"
-                    class="mini"
-                    title="미디어 목록 새로고침"
-                  >
-                    ↻
-                  </button>
+                  />
                 </div>
                 <div id="mediaGrid" class="media-grid"></div>
                 <div class="media-selection">
@@ -2508,11 +2501,9 @@
           for (const [id, key, label] of [
             ["openLibrarySearch", "search", tr("전체 라이브러리 검색")],
             ["settings", "settings", tr("설정")],
-            ["refresh", "refresh", tr("목록 새로고침")],
             ["toggleLeft", "leftPanel", tr("플레이리스트 패널")],
             ["toggleRight", "rightPanel", tr("제어 패널")],
             ["toggleMedia", "media", tr("미디어 브라우저")],
-            ["mediaRefresh", "refresh", tr("미디어 목록 새로고침")],
             ["viewPreview", "grid", tr("미리보기")],
             ["viewText", "text", tr("텍스트")],
             ["followLive", "current", tr("현재 화면으로")],
@@ -2539,7 +2530,6 @@
             ["toggleMedia", "media", tr("미디어")],
             ["audience", "foreground", "Audience"],
             ["stage", "stage", "Stage"],
-            ["refresh", "refresh", tr("새로고침")],
             ["settings", "settings", tr("설정")],
             ["toggleRight", "rightPanel", tr("제어 패널")],
           ])
@@ -3306,7 +3296,7 @@
           S.current = Number.isInteger(index?.index) ? index.index : -1;
           if (S.browse) {
             const browse = S.browse;
-            if (force || Date.now() - lastPresentation > 2000) {
+            {
               const r = await read("/v1/presentation/" + enc(browse.id));
               if (
                 gen !== epoch ||
@@ -3338,10 +3328,7 @@
             (ctx?.item?.uuid || "") +
             "|" +
             (ctx?.playlist_item?.presentation_info?.arrangement_uuid || "");
-          if (
-            target &&
-            (force || S.loadKey !== key || Date.now() - lastPresentation > 2000)
-          ) {
+          if (target) {
             const r = await read(
               target === S.currentId
                 ? "/v1/presentation/active"
@@ -3959,6 +3946,7 @@
         async function tick() {
           if (running) return;
           running = true;
+          const startedAt = Date.now();
           const gen = epoch;
           try {
             if (!base) return;
@@ -3966,8 +3954,7 @@
             await updateSlides();
             if (gen !== epoch) return;
             if (!online) return;
-            if (online && Date.now() - lastCatalog > 30000) await catalog(true);
-            if (refreshNeeded || Date.now() - lastTick > 1800) {
+            {
               await many(statusPaths);
               if (gen !== epoch) return;
               lastTick = Date.now();
@@ -3979,6 +3966,7 @@
               renderTimers();
               renderStage();
             }
+            if (online && Date.now() - lastCatalog >= 30000) await catalog(true);
             if (!online) return;
             $("#connection").className =
               "grow connection " + (online ? "online" : "offline");
@@ -4002,7 +3990,8 @@
             if (gen === epoch && base) connectionFailed();
           } finally {
             running = false;
-            setTimeout(tick, 700);
+            // Never overlap polls; slow responses extend the interval naturally.
+            setTimeout(tick, Math.max(100, 1000 - (Date.now() - startedAt)));
           }
         }
         function timerFormType() {
@@ -4282,7 +4271,6 @@
           updateMediaSelection();
         });
         $("#mediaSearch").oninput = renderMedia;
-        $("#mediaRefresh").onclick = loadMediaCatalog;
         $("#mediaRun").onclick = runMedia;
         $("#stageShow").onclick = () =>
           command("/v1/stage/message", "PUT", $("#stageMessage").value);
@@ -4523,21 +4511,6 @@
             refreshNeeded = true;
           } catch (e) {
             notice(e.message);
-          }
-        };
-        $("#refresh").onclick = async () => {
-          const b = $("#refresh");
-          b.disabled = true;
-          try {
-            if (!(await ensureConnection(true))) return;
-            await catalog();
-            await updateSlides(true);
-            refreshNeeded = true;
-            notice(tr("목록을 새로 읽었습니다"));
-          } catch (e) {
-            notice(e.message);
-          } finally {
-            b.disabled = false;
           }
         };
         async function boot() {

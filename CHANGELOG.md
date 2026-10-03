@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Poll slides, playback and output status approximately every second and catalogs every 30 seconds; remove toolbar and media refresh buttons.
+
 - Reversed the slide size slider so moving right enlarges thumbnails; renamed its accessible label to Slide size.
 
 - Reorganized the left header into two rows: branding above search, panel toggle and connection status.
