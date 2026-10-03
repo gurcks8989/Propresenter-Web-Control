@@ -2090,6 +2090,7 @@
           "슬라이드 썸네일 · 영상/Props 합성 송출 화면 아님":
             "Slide thumbnail only — not the composited video/Props output",
           "슬라이드 열 수": "Slide columns",
+          "슬라이드 크기": "Slide size",
           "미디어 썸네일 크기": "Media thumbnail size",
           "올바른 서버 주소를 입력하세요": "Enter a valid server address",
           "서버 주소를 먼저 설정하세요.":
@@ -2381,10 +2382,10 @@
           size.min = 2;
           size.max = 6;
           size.value = 4;
-          size.title = tr("슬라이드 열 수");
-          size.setAttribute("aria-label", tr("슬라이드 열 수"));
+          size.title = tr("슬라이드 크기");
+          size.setAttribute("aria-label", tr("슬라이드 크기"));
           size.oninput = () =>
-            $("#grid").style.setProperty("--slide-columns", size.value);
+            $("#grid").style.setProperty("--slide-columns", String(Number(size.min) + Number(size.max) - Number(size.value)));
           $(".paging").append(size);
           const mediaSize = document.createElement("input");
           mediaSize.type = "range";

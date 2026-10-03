@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Reversed the slide size slider so moving right enlarges thumbnails; renamed its accessible label to Slide size.
+
 - Reorganized the left header into two rows: branding above search, panel toggle and connection status.
 
 ## 0.1.2 — 2026-10-03 (Preview)
