@@ -5,6 +5,10 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+## 0.1.3 — 2026-10-03 (Preview)
+
+- Add persisted update settings (automatic before connection, notify only, or off), bounded pre-connection checks, manual check/apply, changelog and HTML download. Connected sessions never auto-reload; local HTML requires replacement. Failed checks allow connection, and a one-attempt guard prevents reload loops.
+
 - Preview playlist presentations without triggering their first slide; trigger only the explicitly clicked slide, with playlist item validation before execution.
 
 - Localize synthetic demo library, playlist, media and control names plus preview text to the selected language; real user content remains untouched.

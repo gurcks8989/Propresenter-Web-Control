@@ -4,7 +4,7 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
-Current preview: **v0.1.2**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+Current preview: **v0.1.3**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
 
 **[Open ProPresenter Web Control](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
@@ -29,6 +29,12 @@ For ordinary HTTP connections, enter only the hostname or IP address: `http://` 
 No build step, external JavaScript dependencies, CDN, or account is required. The controller starts without a server address and does not connect until one is configured. Preferences are stored in localStorage; persistence for `file://` pages can vary by browser. If localStorage is unavailable, settings cannot be persisted. If the browser blocks requests from local files or HTTPS to HTTP, use a trusted local HTTP server or an appropriately configured local deployment; do not disable browser security globally.
 
 ## Features
+
+### Updates
+
+Settings offers **Automatically apply before connecting**, **Notify only** (default), and **Do not check**, plus a manual check, changelog link and HTML download. Preferences are saved immediately. Startup and explicit connection attempts check the published `update.json` before contacting ProPresenter, unless checks are disabled. The check has a four-second timeout; failure permits connection with the installed version. Only the official hosted controller can automatically reload to apply an update, and never while connected. A per-version attempt guard prevents reload loops. After reload, the embedded application version must reach the requested version before the app reports successful application. Standalone/local HTML cannot overwrite itself: download and replace the file manually. The isolated sample demo does not contact the update server. Existing older downloads must first be replaced with v0.1.3 or later to gain this feature.
+
+The update manifest and downloadable HTML are generated together with each Pages build. Bump the application version and VERSION file for future updates; editing files without changing the version will not trigger an update alert.
 
 Connection checks must succeed before catalog/status requests begin. **Automatic retries** in Settings defaults to 3 (0–10 allowed), after the initial failed check, at 5-second intervals. At the limit, background connection requests stop and controls remain locked. Choose **Connect** in Settings to start a new connection attempt; a page reload also starts a fresh retry budget unless explicitly disconnected. A successful connection resets the failure count.
 

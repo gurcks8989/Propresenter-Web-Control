@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.2" />
+    <meta name="application-version" content="0.1.3" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -1876,7 +1876,8 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.2 · Preview</p>
+      <p class="muted">Version 0.1.3 · Preview</p>
+      <section id="updateSettings"></section>
       <label class="field"
         ><span>Language / 언어</span
         ><select id="languageInput" aria-label="Language">
@@ -2296,6 +2297,7 @@ function fixture() {
 }
 
 (() => {
+  window.ppDemoMode = true;
   const mock = fixture();
   const storeKey = 'ppControlDemo';
   let demoLanguage = 'en';
@@ -2969,6 +2971,7 @@ function fixture() {
         decorateControls();
         const config = {
           maxRetries: 3,
+          updateMode: "notify",
           host: "",
           readOnly: true,
           language: "en",
@@ -4423,7 +4426,7 @@ function fixture() {
           const startedAt = Date.now();
           const gen = epoch;
           try {
-            if (!base) return;
+            if (!base || updateChecking || updateNavigating) return;
             if (!(await ensureConnection())) return;
             await updateSlides();
             if (gen !== epoch) return;
@@ -4966,6 +4969,7 @@ function fixture() {
               location.reload();
               return;
             }
+            if (!online && !(await checkForUpdate())) return;
             $("#settingsDialog").close();
             locked();
             if (changed) {
@@ -5034,7 +5038,89 @@ function fixture() {
             ).join("") + "</div>";
           updateClearStates();
         }
+        const updateHome = "https://gurcks8989.github.io/Propresenter-Web-Control/";
+        const appVersion = document.querySelector('meta[name="application-version"]').content;
+        let updateChecking = null, updateNavigating = false, updateAvailable = null;
+        const updateText = (en, ko) => language === "ko" ? ko : en;
+        function updateMessage(message) { $("#updateStatus").textContent = message; }
+        function newerVersion(a, b) {
+          const x = a.split('.').map(Number), y = b.split('.').map(Number);
+          for (let i = 0; i < 3; i++) { if (x[i] !== y[i]) return x[i] > y[i]; }
+          return false;
+        }
+        function applyUpdate() {
+          if (!updateAvailable) return true;
+          if (online) {
+            updateMessage(updateText("Disconnect before applying an update.", "업데이트 적용 전에 연결을 해제하세요."));
+            return true;
+          }
+          if (location.protocol === "file:" || !location.href.startsWith(updateHome)) {
+            updateMessage(updateText("Download the new HTML and replace this file. Local files cannot update themselves.", "새 HTML을 다운로드해 기존 파일을 교체하세요. 로컬 파일은 자동 덮어쓰기가 불가능합니다."));
+            return true;
+          }
+          try {
+            if (sessionStorage.getItem('ppUpdateAttempt') === updateAvailable.version) {
+              updateMessage(updateText("The new version was not loaded. Continue with this version or try later.", "새 버전을 불러오지 못했습니다. 현재 버전으로 계속하거나 나중에 다시 시도하세요."));
+              return true;
+            }
+            sessionStorage.setItem('ppUpdateAttempt', updateAvailable.version);
+          } catch {
+            updateMessage(updateText("Browser storage is unavailable; automatic reload was skipped.", "브라우저 저장소를 사용할 수 없어 자동 갱신을 건너뛰었습니다."));
+            return true;
+          }
+          const target = new URL(location.href);
+          target.searchParams.set('appVersion', updateAvailable.version);
+          updateNavigating = true;
+          location.replace(target.href);
+          return false;
+        }
+        async function checkForUpdate(manual = false) {
+          if (window.ppDemoMode) { updateMessage(updateText("Sample demo — update checks are disabled.", "샘플 데모에서는 업데이트 확인을 하지 않습니다.")); return true; }
+          if (!manual && config.updateMode === 'off') return true;
+          if (updateChecking) return updateChecking;
+          updateChecking = (async () => {
+            updateMessage(updateText("Checking for updates…", "업데이트 확인 중…"));
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 4000);
+            try {
+              const response = await fetch(updateHome + 'update.json?t=' + Date.now(), {cache:'no-store', signal:controller.signal});
+              if (!response.ok) throw Error('HTTP ' + response.status);
+              const manifest = await response.json();
+              if (!/^\d+\.\d+\.\d+$/.test(manifest.version)) throw Error('Invalid version');
+              if (!newerVersion(manifest.version, appVersion)) {
+                let applied = false;
+                try { const pending = sessionStorage.getItem('ppUpdateAttempt'); applied = !!pending && !newerVersion(pending, appVersion); if(applied) sessionStorage.removeItem('ppUpdateAttempt'); } catch {}
+                updateMessage((applied ? updateText("Update applied: ", "업데이트 적용 완료: ") : updateText("Up to date: ", "최신 버전: ")) + appVersion);
+                return true;
+              }
+              updateAvailable = manifest;
+              $("#applyUpdate").hidden = false;
+              $("#updateDownload").hidden = false;
+              $("#updateDownload").href = updateHome + 'control.html?appVersion=' + encodeURIComponent(manifest.version);
+              updateMessage(updateText("New version available: ", "새 버전이 있습니다: ") + manifest.version);
+              notice($("#updateStatus").textContent);
+              return !manual && config.updateMode === 'auto' && !online ? applyUpdate() : true;
+            } catch {
+              updateMessage(updateText("Update check failed. You can connect using this version.", "업데이트 확인에 실패했습니다. 현재 버전으로 연결할 수 있습니다."));
+              return true;
+            } finally { clearTimeout(timeout); }
+          })();
+          try { return await updateChecking; } finally { updateChecking = null; }
+        }
+        function setupUpdates() {
+          if (!['auto','notify','off'].includes(config.updateMode)) config.updateMode = 'notify';
+          $("#updateSettings").innerHTML = `<label>${updateText('Updates','업데이트')}<select id="updateMode"><option value="auto">${updateText('Automatically apply before connecting','연결 전에 자동 적용')}</option><option value="notify">${updateText('Notify only','알림만')}</option><option value="off">${updateText('Do not check','확인 안 함')}</option></select></label><p id="updateStatus" class="muted" role="status"></p><button type="button" id="checkUpdate">${updateText('Check now','지금 확인')}</button> <button type="button" id="applyUpdate" hidden>${updateText('Apply update','업데이트 적용')}</button> <a id="updateDownload" hidden download="propresenter_web_control.html">${updateText('Download HTML','HTML 다운로드')}</a> · <a href="https://github.com/gurcks8989/Propresenter-Web-Control/blob/main/CHANGELOG.md" target="_blank" rel="noopener">${updateText('Changelog','변경 내역')}</a>`;
+          $("#updateMode").value = config.updateMode;
+          $("#updateMode").onchange = () => {
+            config.updateMode = $("#updateMode").value;
+            try { localStorage.setItem('ppControlDemo', JSON.stringify(config)); } catch { updateMessage(updateText('Could not save update preference.','업데이트 설정을 저장하지 못했습니다.')); }
+          };
+          $("#checkUpdate").onclick = () => checkForUpdate(true);
+          $("#applyUpdate").onclick = applyUpdate;
+        }
         async function boot() {
+          setupUpdates();
+          if (!(await checkForUpdate())) return;
           try {
             base = config.disconnected ? "" : normalizeHost(config.host);
           } catch {

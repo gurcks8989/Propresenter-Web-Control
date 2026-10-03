@@ -1,4 +1,5 @@
 (() => {
+  window.ppDemoMode = true;
   const mock = fixture();
   const storeKey = 'ppControlDemo';
   let demoLanguage = 'en';

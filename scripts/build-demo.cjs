@@ -66,4 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
 fs.writeFileSync(path.join(root, 'docs/live.html'), localizeBanner(live));
 fs.writeFileSync(path.join(root, 'docs/index.html'), localizeBanner(live));
 fs.writeFileSync(path.join(root, 'docs/control.html'), source);
+const version = source.match(/name="application-version" content="([^"]+)"/)[1];
+fs.writeFileSync(path.join(root, 'docs/update.json'), JSON.stringify({version}, null, 2) + '\n');
 fs.writeFileSync(path.join(root, 'docs/.nojekyll'), '');
