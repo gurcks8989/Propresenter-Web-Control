@@ -2609,7 +2609,7 @@ function fixture() {
           "비디오 입력": "Video input",
           지우기: "Clear",
         };
-        const language = saved().language === "en" ? "en" : "ko";
+        const language = saved().language === "ko" ? "ko" : "en";
         const translationPattern = new RegExp(
           Object.keys(UI_TRANSLATIONS)
             .sort((a, b) => b.length - a.length)
@@ -2945,7 +2945,7 @@ function fixture() {
           maxRetries: 3,
           host: "",
           readOnly: true,
-          language: "ko",
+          language: "en",
           viewMode: "preview",
           ...saved(),
         };
