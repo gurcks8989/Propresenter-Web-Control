@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Preview playlist presentations without triggering their first slide; trigger only the explicitly clicked slide, with playlist item validation before execution.
+
 - Localize synthetic demo library, playlist, media and control names plus preview text to the selected language; real user content remains untouched.
 
 - Localize hosted-page banner labels using the selected UI language instead of showing bilingual text.

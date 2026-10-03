@@ -1658,7 +1658,7 @@
             ><small id="itemCount"></small>
           </div>
           <div class="item-list" id="items"></div>
-          <div class="side-note">항목 클릭 → 실행 · 주황색 = 현재 활성</div>
+          <div class="side-note">곡 선택 → 미리보기 · 슬라이드 클릭 → 실행</div>
         </div>
         <div id="libraryBrowser" class="browser-pane hidden">
           <select
@@ -2047,8 +2047,8 @@
           "목록 새로고침": "Refresh lists",
           설정: "Settings",
           "제어 패널": "Controls",
-          "항목 클릭 → 실행 · 주황색 = 현재 활성":
-            "Click item to trigger · Orange = active",
+          "곡 선택 → 미리보기 · 슬라이드 클릭 → 실행":
+            "Select song to preview · Click slide to trigger",
           "라이브러리 선택": "Select library",
           "이 라이브러리에서 검색": "Search this library",
           "Presentation 검색": "Search presentations",
@@ -3051,12 +3051,12 @@
             }
           }
         }
-        async function previewLibrary(id, selectedLibrary = S.libraryName) {
+        async function previewLibrary(id, selectedLibrary = S.libraryName, playlistItem = null) {
           const library = selectedLibrary,
             token = ++S.previewRequest,
             gen = epoch;
           ++S.activeRequest;
-          S.browse = { library, id };
+          S.browse = { library, id, ...playlistItem };
           S.p = null;
           S.slides = [];
           S.activeContext = null;
@@ -3104,7 +3104,7 @@
             .map((x) =>
               x.type === "header"
                 ? `<div class="item-header" style="border-color:${color(x.header_color)}">${E(name(x))}</div>`
-                : `<button data-write class="playlist-item ${active?.playlist?.uuid === S.playlistId && active?.item?.uuid === uid(x) ? "active" : ""}" data-item="${E(uid(x))}" ${x.type === "placeholder" ? "disabled" : ""}><b>${x.type === "presentation" ? presentationItemIcon() : x.type === "audio" ? icon("audio") : icon("media")}</b><span>${E(name(x))}</span></button>`,
+                : `<button ${x.type === "presentation" ? "" : "data-write"} class="playlist-item ${active?.playlist?.uuid === S.playlistId && active?.item?.uuid === uid(x) ? "active" : ""}" data-item="${E(uid(x))}" ${x.type === "placeholder" ? "disabled" : ""}><b>${x.type === "presentation" ? presentationItemIcon() : x.type === "audio" ? icon("audio") : icon("media")}</b><span>${E(name(x))}</span></button>`,
             )
             .join("");
           setHTML($("#items"), html || blank());
@@ -3115,6 +3115,12 @@
         async function triggerItem(id) {
           const item = S.items.find((x) => uid(x) === id);
           if (!item || !Number.isInteger(item.id?.index)) return;
+          if (item.type === "presentation") {
+            const presentation = item.presentation_info?.presentation_uuid || item.target_uuid;
+            if (!presentation) return;
+            await previewLibrary(presentation, "", { playlist: S.playlistId, itemId: id, itemIndex: item.id.index });
+            return;
+          }
           const pid = S.playlistId;
           if (
             await command(`/v1/playlist/${enc(pid)}/${item.id.index}/trigger`)
@@ -3427,11 +3433,21 @@
           S.pending = index;
           updateMarkers();
           const path = S.browse
-            ? `/v1/library/${enc(S.browse.library)}/${enc(p)}/${index}/trigger`
+            ? S.browse.playlist
+              ? `/v1/playlist/${enc(S.browse.playlist)}/${S.browse.itemIndex}/${index}/trigger`
+              : `/v1/library/${enc(S.browse.library)}/${enc(p)}/${index}/trigger`
             : ctx?.playlist?.uuid && Number.isInteger(ctx?.item?.index)
               ? `/v1/playlist/${enc(ctx.playlist.uuid)}/${ctx.item.index}/${index}/trigger`
               : `/v1/presentation/${enc(p)}/${index}/trigger`;
           try {
+            if (browse?.playlist) {
+              const list = await request("/v1/playlist/" + enc(browse.playlist));
+              const item = arr(list?.items).find(x => uid(x) === browse.itemId);
+              if (!item || item.id?.index !== browse.itemIndex || (item.presentation_info?.presentation_uuid || item.target_uuid) !== p) {
+                notice(language === "en" ? "Playlist changed. Select the presentation again." : "플레이리스트가 변경되었습니다. 곡을 다시 선택하세요.");
+                return;
+              }
+            }
             // Index-based API: never execute an index from a stale snapshot.
             const r = await request(
               browse || !ctx
