@@ -12,9 +12,20 @@ html = html.replaceAll('ppControlV9', 'ppControlDemo');
 html = html.replace('String(s ?? "")', 'String(typeof s === "string" && s.startsWith("https://demo.invalid/") ? window.demoThumbnail(s) : (s ?? ""))');
 html = html.replace('preview.src = src', 'preview.src = window.demoThumbnail(src)').replace('im.src = src', 'im.src = window.demoThumbnail(src)');
 html = html.replace('if (params.has("host")) config.host = params.get("host");', 'config.host = "https://demo.invalid"; config.disconnected = false;');
-html = html.replace('const host = $("#hostInput").value.trim();', 'const host = "https://demo.invalid";');
-html = html.replace('u.port = String(Number(value));', 'u.port = ""; // The displayed example port never changes the mock origin.');
-html = html.replace('$("#settingsDialog").showModal();', '$("#hostInput").value = "localhost"; $("#portInput").value = "1025"; $("#hostInput").disabled = true; $("#portInput").disabled = true; $("#settingsDialog").showModal();');
+html = html.replace('const address = splitServer(config.host);', 'const address = splitServer(config.demoAddress || "");');
+html = html.replace('const next = serverFromFields(),', 'const demoAddress = serverFromFields(); const next = "https://demo.invalid",');
+html = html.replace('config.host = next;', 'config.demoAddress = demoAddress; config.host = next;');
+html = html.replace('$("#settingsDialog").showModal();', `
+  let note = document.querySelector('#demoConnectionNote');
+  if (!note) {
+    note = document.createElement('p'); note.id = 'demoConnectionNote';
+    note.style.cssText = 'font-size:12px;line-height:1.5;color:#b8c5da';
+    $("#hostInput").closest('label').before(note);
+  }
+  note.textContent = language === 'en'
+    ? 'Demo: address and port can be edited and saved, but only sample data is used. Choose Live connection in the top banner to connect to equipment.'
+    : '데모: 주소와 포트를 입력·저장할 수 있지만 샘플 데이터만 사용합니다. 실제 장비에 연결하려면 상단의 실제 연결을 선택하세요.';
+  $("#settingsDialog").showModal();`);
 fs.mkdirSync(path.join(root, 'docs'), {recursive:true});
 fs.writeFileSync(path.join(root, 'docs/index.html'), html);
 let live = source.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; form-action 'none'; base-uri 'none'">`);

@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Unlock demo address and port fields, validate and persist their values, and explain that actual equipment connections require Live mode.
+
 - Extend the Clear All button to the full height of the adjacent layer-clear buttons, with its icon centered.
 
 - Add an opt-in live connection page alongside the isolated demo, with editable connection settings, read-only startup, local-network guidance and a standalone HTML download.
