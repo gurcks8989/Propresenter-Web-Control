@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Make the main hosted URL the real controller, with direct connection settings; move the isolated sample demo to an optional link.
+
 - Read actual layer status every second and highlight active clear buttons in red; clear stale slide previews when the slide layer is inactive.
 
 - Restyle toolbar output toggles as status rings, show the current Look beneath its icon, and replace the Live bullseye with a broadcast-wave icon.

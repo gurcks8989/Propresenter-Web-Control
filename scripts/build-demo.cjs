@@ -27,13 +27,13 @@ html = html.replace('$("#settingsDialog").showModal();', `
     : '데모: 주소와 포트를 입력·저장할 수 있지만 샘플 데이터만 사용합니다. 실제 장비에 연결하려면 상단의 실제 연결을 선택하세요.';
   $("#settingsDialog").showModal();`);
 fs.mkdirSync(path.join(root, 'docs'), {recursive:true});
-fs.writeFileSync(path.join(root, 'docs/index.html'), html);
+fs.writeFileSync(path.join(root, 'docs/demo.html'), html);
 let live = source.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; form-action 'none'; base-uri 'none'">`);
 live = live.replaceAll('ppControlV9', 'ppControlWebLive');
 // A fresh page always waits for an explicit Connect; URL parameters cannot arm controls.
 live = live.replace('if (params.has("host")) config.host = params.get("host");', 'config.disconnected = true; config.readOnly = true;');
 live = live.replace('config.readOnly = params.get("readonly") !== "0";', 'config.readOnly = true;');
-live = live.replace('<body>', '<body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">LIVE · 실제 장비 연결 <a href="index.html" style="color:white">Demo</a><a href="control.html" download="propresenter_web_control.html" style="color:white">HTML 다운로드 / Download</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
+live = live.replace('<body>', '<body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">ProPresenter Web Control <a href="demo.html" style="color:white">샘플 데모 / Sample demo</a><a href="control.html" download="propresenter_web_control.html" style="color:white">HTML 다운로드 / Download</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
 live = live.replace('</body>', `<script>
 document.addEventListener('DOMContentLoaded', () => {
   const en = document.documentElement.lang === 'en';
@@ -47,5 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script></body>`);
 fs.writeFileSync(path.join(root, 'docs/live.html'), live);
+fs.writeFileSync(path.join(root, 'docs/index.html'), live);
 fs.writeFileSync(path.join(root, 'docs/control.html'), source);
 fs.writeFileSync(path.join(root, 'docs/.nojekyll'), '');

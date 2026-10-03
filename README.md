@@ -6,11 +6,11 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 Current preview: **v0.1.2**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
 
-**[Open the interactive demo](https://gurcks8989.github.io/Propresenter-Web-Control/)**
+**[Open ProPresenter Web Control](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
-The demo runs entirely in your browser with synthetic sample data. It cannot connect to ProPresenter or control real equipment. Try slide navigation, library browsing, media selection and screen toggles. Advanced controls such as capture, macros and transport are illustrative and do not reproduce all device behavior. Reload to reset sample state.
+The main page connects directly to real equipment: enter your address and port in Settings and choose Connect. No separate live page is required.
 
-For real equipment, choose **Live connection** in the banner or [open the live controller](https://gurcks8989.github.io/Propresenter-Web-Control/live.html). The live page uses the same controller source with real browser network requests, separate saved settings, editable host/port fields, and read-only enabled on each page load. It never connects automatically: open Settings and choose Connect. Disable read-only only when ready to control output. Returning to Demo leaves the live page and its polling behind.
+The controller uses real browser network requests, editable host/port fields, and read-only enabled on each page load. It never connects automatically: choose Connect. Disable read-only only when ready to control output. The old live.html URL remains compatible. An optional [sample demo](https://gurcks8989.github.io/Propresenter-Web-Control/demo.html) uses isolated synthetic data and never connects to equipment. Its advanced controls are illustrative and do not reproduce all device behavior. Opening the sample demo leaves the controller page and its polling behind.
 
 Allow local network access when prompted. Both devices must be on a reachable network, and ProPresenter must permit the browser's cross-origin requests. HTTPS-to-HTTP access depends on browser support and permissions; a generic fetch failure cannot reliably identify the cause. Supporting browsers receive a local/loopback address-space hint for HTTP requests from HTTPS. If blocked, use **Download** in the live banner to run the standalone HTML locally (or serve it from a trusted local server). Do not expose ProPresenter to the public internet or disable browser security globally. See [Chrome's local network access documentation](https://developer.chrome.com/blog/local-network-access).
 
