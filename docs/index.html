@@ -3048,7 +3048,7 @@ function fixture() {
           )
             throw Error(tr("포트는 1부터 65535 사이의 정수로 입력하세요."));
           const u = new URL(normalizeHost(host));
-          u.port = String(Number(value));
+          u.port = ""; // The displayed example port never changes the mock origin.
           return u.origin;
         }
         function notice(t) {

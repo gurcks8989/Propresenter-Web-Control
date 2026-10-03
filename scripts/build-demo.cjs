@@ -12,6 +12,7 @@ html = html.replace('String(s ?? "")', 'String(typeof s === "string" && s.starts
 html = html.replace('preview.src = src', 'preview.src = window.demoThumbnail(src)').replace('im.src = src', 'im.src = window.demoThumbnail(src)');
 html = html.replace('if (params.has("host")) config.host = params.get("host");', 'config.host = "https://demo.invalid"; config.disconnected = false;');
 html = html.replace('const host = $("#hostInput").value.trim();', 'const host = "https://demo.invalid";');
+html = html.replace('u.port = String(Number(value));', 'u.port = ""; // The displayed example port never changes the mock origin.');
 html = html.replace('$("#settingsDialog").showModal();', '$("#hostInput").value = "localhost"; $("#portInput").value = "1025"; $("#hostInput").disabled = true; $("#portInput").disabled = true; $("#settingsDialog").showModal();');
 fs.mkdirSync(path.join(root, 'docs'), {recursive:true});
 fs.writeFileSync(path.join(root, 'docs/index.html'), html);
