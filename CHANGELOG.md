@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Show persistent media execution progress and verify server activation after triggering; distinguish accepted requests from confirmed activation without claiming visible output verification.
+
 - Use white icons for inactive clear buttons, including Clear All and video input; retain red backgrounds for active layers.
 
 - Make the main hosted URL the real controller, with direct connection settings; move the isolated sample demo to an optional link.

@@ -4177,7 +4177,7 @@ function fixture() {
           }
           const selected = S.mediaItems.find((x) => uid(x) === S.mediaSelected);
           $("#mediaSelection").textContent = selected
-            ? tr("선택: ") + name(selected)
+            ? tr("선택: ") + name(selected) + (S.mediaFeedback ? " · " + S.mediaFeedback : "")
             : tr("카드 선택은 송출되지 않습니다");
           $("#mediaRun").disabled =
             !selected || S.mediaBusy || config.readOnly || !online;
@@ -4248,11 +4248,15 @@ function fixture() {
           }
         }
         async function runMedia() {
-          if (S.mediaBusy || config.readOnly || !S.mediaSelected) return;
+          if (S.mediaBusy) return;
+          if (config.readOnly) { notice(tr("읽기 전용입니다. 설정에서 해제할 수 있습니다.")); return; }
+          if (!online) { notice(tr("연결 상태를 확인하세요.")); return; }
+          if (!S.mediaSelected) return;
           const id = S.mediaSelected,
             playlist = S.mediaPlaylist,
             gen = epoch;
           S.mediaBusy = true;
+          S.mediaFeedback = language === "en" ? "Checking selected item…" : "선택 항목 확인 중…";
           renderMedia();
           try {
             await loadMedia(playlist, true);
@@ -4266,9 +4270,32 @@ function fixture() {
               );
               return;
             }
-            await command(
+            S.mediaFeedback = language === "en" ? "Sending trigger…" : "실행 요청 전송 중…";
+            updateMediaSelection();
+            const sent = await command(
               `/v1/media/playlist/${enc(playlist)}/${enc(id)}/trigger`,
             );
+            if (!sent) {
+              S.mediaFeedback = language === "en" ? "Request failed — see error message" : "실행 요청 실패 · 오류 메시지를 확인하세요";
+              return;
+            }
+            let confirmed = false;
+            for (let attempt = 0; attempt < 4; attempt++) {
+              await new Promise(resolve => setTimeout(resolve, 350));
+              if (gen !== epoch || playlist !== S.mediaPlaylist || id !== S.mediaSelected) return;
+              const active = await read("/v1/media/playlist/active");
+              const layers = await read("/v1/status/layers");
+              if (uid(active?.playlist) === playlist && uid(active?.item) === id && layers?.media === true) {
+                confirmed = true; break;
+              }
+            }
+            S.mediaFeedback = confirmed
+              ? (language === "en" ? "Server activation confirmed (not screen verification)" : "서버 미디어 활성 확인 · 실제 화면 확인은 별도")
+              : (language === "en" ? "Request accepted, but activation not confirmed" : "요청은 수신됐으나 미디어 활성 미확인");
+            updateClearStates();
+          } catch (e) {
+            S.mediaFeedback = (language === "en" ? "Could not verify execution: " : "실행 확인 실패: ") + e.message;
+            notice(S.mediaFeedback);
           } finally {
             S.mediaBusy = false;
             renderMedia();
@@ -4673,6 +4700,7 @@ function fixture() {
           e.stopPropagation();
           if (!S.mediaItems.some((x) => uid(x) === card.dataset.media)) return;
           S.mediaSelected = card.dataset.media;
+          S.mediaFeedback = "";
           updateMediaSelection();
         });
         $("#mediaSearch").oninput = renderMedia;
