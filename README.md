@@ -8,7 +8,11 @@ Current preview: **v0.1.2**. Download packaged files and read release notes on t
 
 **[Open the interactive demo](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
-The demo runs entirely in your browser with synthetic sample data. It cannot connect to ProPresenter or control real equipment. Try slide navigation, library browsing, media selection and screen toggles. Advanced controls such as capture, macros and transport are illustrative and do not reproduce all device behavior. Reload to reset sample state. For real use, download `propresenter_control_v9.html` instead.
+The demo runs entirely in your browser with synthetic sample data. It cannot connect to ProPresenter or control real equipment. Try slide navigation, library browsing, media selection and screen toggles. Advanced controls such as capture, macros and transport are illustrative and do not reproduce all device behavior. Reload to reset sample state.
+
+For real equipment, choose **Live connection** in the banner or [open the live controller](https://gurcks8989.github.io/Propresenter-Web-Control/live.html). The live page uses the same controller source with real browser network requests, separate saved settings, editable host/port fields, and read-only enabled on each page load. It never connects automatically: open Settings and choose Connect. Disable read-only only when ready to control output. Returning to Demo leaves the live page and its polling behind.
+
+Allow local network access when prompted. Both devices must be on a reachable network, and ProPresenter must permit the browser's cross-origin requests. HTTPS-to-HTTP access depends on browser support and permissions; a generic fetch failure cannot reliably identify the cause. Supporting browsers receive a local/loopback address-space hint for HTTP requests from HTTPS. If blocked, use **Download** in the live banner to run the standalone HTML locally (or serve it from a trusted local server). Do not expose ProPresenter to the public internet or disable browser security globally. See [Chrome's local network access documentation](https://developer.chrome.com/blog/local-network-access).
 
 ![ProPresenter Web Control — slide previews, playlist navigation, media browser and Show Controls](app-preview.png)
 
