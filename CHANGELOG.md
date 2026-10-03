@@ -5,6 +5,14 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+## 0.1.5 — 2026-10-03 (Preview)
+
+- Rename the standalone file to `propresenter_web_control.html`. Keep the existing settings storage key for compatibility.
+- Widen the inspector according to the slide aspect ratio on desktop.
+- Add a draggable, keyboard-accessible source-list divider with saved height and double-click reset.
+- Localize output labels as 청중 / 스테이지 and use filled circles for enabled outputs.
+- Replace the native Looks dropdown with a compact menu opening below the button; close on outside click or Escape.
+
 ## 0.1.4 — 2026-10-03 (Preview)
 
 - Respect the current slide's API dimensions (thumbnail dimensions as fallback) without stretching the preview to the clear controls' height.

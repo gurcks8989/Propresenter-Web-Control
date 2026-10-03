@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.4" />
+    <meta name="application-version" content="0.1.5" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -889,12 +889,29 @@
         background: #3c4658;
       }
       .source-outline {
-        flex: 0 0 42%;
-        min-height: 160px;
+        flex: 0 0 clamp(80px, var(--source-height, 42%), calc(100% - 125px));
+        min-height: 0;
         overflow: auto;
         border-bottom: 1px solid #191a1d;
         background: #37383b;
       }
+      .source-splitter {
+        flex: 0 0 7px;
+        cursor: row-resize;
+        touch-action: none;
+        background: #25262a;
+        position: relative;
+      }
+      .source-splitter::after {
+        content: "";
+        position: absolute;
+        width: 32px;
+        height: 2px;
+        background: #777b84;
+        left: calc(50% - 16px);
+        top: 2px;
+      }
+      .source-splitter:hover, .source-splitter:focus-visible { background: #3975ac; outline: none; }
       .source-outline .tree {
         max-height: none;
         min-height: 0;
@@ -1164,7 +1181,7 @@
       /* Desktop Show workspace: browser + slides + inspector, independent media bin. */
       :root {
         --left: 220px;
-        --right: 310px;
+        --right: clamp(310px, calc(187px * var(--preview-ratio, 1.7777778) + 80px), 480px);
       }
       .top {
         height: 76px;
@@ -1223,6 +1240,9 @@
         display: none;
       }
       .toolbar-look {
+        position: relative;
+        width: 82px;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1242,12 +1262,54 @@
         width: 22px;
         height: 22px;
       }
-      .top .toolbar-look select { background: transparent; border-color: transparent; text-align: center; height: 16px; padding: 0 4px; font-size: 11px; width: 110px; }
+      .top .toolbar-look select {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        border-radius: 3px;
+        text-align: center;
+        text-align-last: center;
+        height: 20px;
+        padding: 0 14px 0 2px;
+        font-size: 11px;
+        width: 82px;
+        cursor: pointer;
+        text-overflow: ellipsis;
+      }
+      .toolbar-look::after {
+        content: "";
+        position: absolute;
+        right: 5px;
+        bottom: 9px;
+        width: 5px;
+        height: 5px;
+        border-right: 1px solid currentColor;
+        border-bottom: 1px solid currentColor;
+        transform: rotate(45deg);
+        pointer-events: none;
+      }
+      .top .toolbar-look select:hover { background: #505257; }
+      .top .toolbar-look select option { background: #292c33; color: #fff; }
+      .top #lookToggle {
+        width: 82px; height: 20px; min-height: 20px;
+        padding: 0 14px 0 2px; border: 0; background: transparent;
+        font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      #lookMenu {
+        position: fixed; z-index: 1000; margin: 0; padding: 4px;
+        min-width: 130px; max-width: 260px; max-height: 280px; overflow-y: auto;
+        background: #292c33; border: 1px solid #626771; border-radius: 5px;
+        box-shadow: 0 6px 20px #0008;
+      }
+      #lookMenu button { display: block; width: 100%; border: 0; text-align: left; background: transparent; }
+      #lookMenu button:hover, #lookMenu button:focus-visible { background: #3d628a; }
+      #lookMenu button[aria-checked="true"] { background: #385573; }
       .top #audience, .top #stage { width: 58px; }
       .top #audience .ui-icon, .top #stage .ui-icon { width: 22px; height: 22px; }
       .top #audience, .top #stage { background: transparent; border-color: transparent; color: #ddd; }
       .top #audience .ui-icon, .top #stage .ui-icon { color: #f26868; }
       .top #audience.on .ui-icon, .top #stage.on .ui-icon { color: #8ccc57; }
+      .top #audience.on .ui-icon circle, .top #stage.on .ui-icon circle { fill: currentColor; }
       .top #audience:disabled .ui-icon, .top #stage:disabled .ui-icon { color: #848891; }
       .workspace {
         height: calc(100dvh - 105px);
@@ -1879,7 +1941,7 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.4 · Preview</p>
+      <p class="muted">Version 0.1.5 · Preview</p>
       <section id="updateSettings"></section>
       <label class="field"
         ><span>Language / 언어</span
@@ -2328,6 +2390,45 @@
           $(".top .brand").before(identity);
           identity.append($(".top .brand"), navigation);
           navigation.append(search, $("#toggleLeft"), $("#connection"));
+          const splitter = document.createElement("div");
+          splitter.className = "source-splitter";
+          splitter.tabIndex = 0;
+          splitter.setAttribute("role", "separator");
+          splitter.setAttribute("aria-orientation", "horizontal");
+          splitter.setAttribute("aria-label", language === "ko" ? "목록 높이 조절" : "Resize source list");
+          splitter.setAttribute("aria-valuemin", "15");
+          splitter.setAttribute("aria-valuemax", "80");
+          const left = $(".left"), outline = $(".source-outline");
+          outline.after(splitter);
+          let sourceHeight = 42, dragging = false;
+          const resizeSource = (value, save = false) => {
+            sourceHeight = Math.min(80, Math.max(15, Number(value) || 42));
+            left.style.setProperty("--source-height", sourceHeight + "%");
+            splitter.setAttribute("aria-valuenow", String(Math.round(sourceHeight)));
+            if (save) try { localStorage.setItem("ppSourceHeight", String(sourceHeight)); } catch {}
+          };
+          try { sourceHeight = Number(localStorage.getItem("ppSourceHeight")) || 42; } catch {}
+          resizeSource(sourceHeight);
+          splitter.onpointerdown = (event) => {
+            if (event.button !== 0) return;
+            event.preventDefault(); dragging = true;
+            splitter.setPointerCapture(event.pointerId);
+          };
+          splitter.onpointermove = (event) => {
+            if (!dragging) return;
+            const rect = left.getBoundingClientRect();
+            if (rect.height) resizeSource(100 * (event.clientY - rect.top) / rect.height);
+          };
+          splitter.onpointerup = splitter.onpointercancel = splitter.onlostpointercapture = () => {
+            if (dragging) resizeSource(sourceHeight, true);
+            dragging = false;
+          };
+          splitter.onkeydown = (event) => {
+            const value = {ArrowUp: sourceHeight - 3, ArrowDown: sourceHeight + 3, Home: 15, End: 80}[event.key];
+            if (value === undefined) return;
+            event.preventDefault(); resizeSource(value, true);
+          };
+          splitter.ondblclick = () => resizeSource(42, true);
           const pane = document.createElement("section");
           pane.className = "preview-shell";
           pane.innerHTML = tr(
@@ -2568,17 +2669,69 @@
           );
           for (const [id, key, label] of [
             ["toggleMedia", "media", tr("미디어")],
-            ["audience", "outputRing", "Audience"],
-            ["stage", "outputRing", "Stage"],
+            ["audience", "outputRing", language === "ko" ? "청중" : "Audience"],
+            ["stage", "outputRing", language === "ko" ? "스테이지" : "Stage"],
             ["settings", "settings", tr("설정")],
             ["toggleRight", "rightPanel", tr("제어 패널")],
           ])
             iconTextButton($("#" + id), key, label);
-          const lookField = document.createElement("label");
+          const lookField = document.createElement("div");
           lookField.className = "toolbar-look";
           lookField.innerHTML = `<span>${icon("look")}<span>Looks</span></span>`;
           $("#looks").before(lookField);
           lookField.append($("#looks"));
+          $("#looks").setAttribute("aria-label", language === "ko" ? "화면 구성 선택" : "Select Look");
+          const lookSelect = $("#looks");
+          lookSelect.hidden = true;
+          const lookToggle = document.createElement("button");
+          lookToggle.id = "lookToggle";
+          lookToggle.dataset.write = "";
+          lookToggle.setAttribute("aria-haspopup", "menu");
+          lookToggle.setAttribute("aria-expanded", "false");
+          lookToggle.setAttribute("aria-label", lookSelect.getAttribute("aria-label"));
+          lookToggle.setAttribute("aria-controls", "lookMenu");
+          lookField.append(lookToggle);
+          const lookMenu = document.createElement("div");
+          lookMenu.id = "lookMenu";
+          lookMenu.setAttribute("role", "menu");
+          lookMenu.hidden = true;
+          document.body.append(lookMenu);
+          const closeLooks = () => { lookMenu.hidden = true; lookToggle.setAttribute("aria-expanded", "false"); };
+          const syncLookLabel = () => {
+            lookToggle.textContent = lookSelect.selectedOptions[0]?.textContent || "—";
+            lookToggle.title = lookToggle.textContent;
+            if (lookSelect.disabled) closeLooks();
+          };
+          lookSelect.addEventListener("looklabel", syncLookLabel);
+          new MutationObserver(syncLookLabel).observe(lookSelect, {childList:true, subtree:true, attributes:true});
+          syncLookLabel();
+          lookToggle.onclick = () => {
+            if (!lookMenu.hidden) { closeLooks(); return; }
+            lookMenu.replaceChildren();
+            for (const option of lookSelect.options) {
+              const item = document.createElement("button");
+              item.textContent = option.textContent;
+              item.disabled = option.disabled;
+              item.setAttribute("role", "menuitemradio");
+              item.setAttribute("aria-checked", String(option.selected));
+              item.onclick = () => {
+                if (lookSelect.disabled || lookToggle.disabled) { closeLooks(); return; }
+                lookSelect.value = option.value;
+                lookSelect.dispatchEvent(new Event("change", {bubbles:true}));
+                syncLookLabel(); closeLooks(); lookToggle.focus();
+              };
+              lookMenu.append(item);
+            }
+            const rect = lookToggle.getBoundingClientRect();
+            lookMenu.style.top = (rect.bottom + 8) + "px";
+            lookMenu.style.left = Math.max(4, Math.min(rect.left, innerWidth - 264)) + "px";
+            lookMenu.hidden = false;
+            lookToggle.setAttribute("aria-expanded", "true");
+            lookMenu.querySelector("button:not(:disabled)")?.focus();
+          };
+          document.addEventListener("pointerdown", e => { if (!lookField.contains(e.target) && !lookMenu.contains(e.target)) closeLooks(); });
+          document.addEventListener("keydown", e => { if (e.key === "Escape" && !lookMenu.hidden) { closeLooks(); lookToggle.focus(); } });
+          window.addEventListener("resize", closeLooks);
           $("#openLibrarySearch").classList.remove("icon-only");
           const searchCaption = document.createElement("span");
           searchCaption.textContent = tr("검색");
@@ -3196,10 +3349,14 @@
           const monitor = preview.parentElement;
           const size = uid(S.p) === S.currentId ? S.slides[S.current]?.slide?.size : null;
           const hasSize = Number(size?.width) > 0 && Number(size?.height) > 0;
-          if (hasSize) monitor.style.aspectRatio = `${size.width} / ${size.height}`;
+          const setPreviewRatio = (width, height) => {
+            monitor.style.aspectRatio = `${width} / ${height}`;
+            document.documentElement.style.setProperty('--preview-ratio', width / height);
+          };
+          if (hasSize) setPreviewRatio(size.width, size.height);
           preview.onload = () => {
             if (!hasSize && preview.naturalWidth && preview.naturalHeight)
-              monitor.style.aspectRatio = `${preview.naturalWidth} / ${preview.naturalHeight}`;
+              setPreviewRatio(preview.naturalWidth, preview.naturalHeight);
           };
           if (hideBibleSlides()) {
             preview.hidden = true;
@@ -3622,6 +3779,7 @@
           );
           if (document.activeElement !== $("#looks"))
             $("#looks").value = uid(match);
+          $("#looks").dispatchEvent(new Event("looklabel"));
           $("#lookName").textContent = tr("현재: ") + (name(current) || "—");
           setHTML(
             $("#macros"),

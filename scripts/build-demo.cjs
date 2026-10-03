@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
-let html = fs.readFileSync(path.join(root, 'propresenter_control_v9.html'), 'utf8');
+let html = fs.readFileSync(path.join(root, 'propresenter_web_control.html'), 'utf8');
 const source = html;
 const fixture = fs.readFileSync(path.join(__dirname, 'demo-fixture.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(__dirname, 'demo-runtime.js'), 'utf8');

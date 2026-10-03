@@ -4,7 +4,7 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
-Current preview: **v0.1.4**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+Current preview: **v0.1.5**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
 
 **[Open ProPresenter Web Control](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
@@ -18,7 +18,7 @@ Allow local network access when prompted. Both devices must be on a reachable ne
 
 *Actual browser rendering of the controller with sample data from an isolated local mock server. Thumbnails are placeholders, not live production output. The interface supports both Korean and English.*
 
-1. Open `propresenter_control_v9.html` in a modern browser.
+1. Open `propresenter_web_control.html` in a modern browser.
 2. In **Settings**, choose **Language → English** or **한국어**.
 3. Enter the server address and **Port** in their separate fields, using the values shown in ProPresenter's network settings. For example, use `localhost` and port `1025` when that matches your local setup. An `http://` or `https://` prefix is supported. Previously saved combined addresses are split automatically; pasting an address with a port also fills the Port field when you leave the address field. Ports must be integers from 1 to 65535. Use the actual configured port.
 4. Click **Connect** when disconnected, or **Save settings** when connected. Changing language reloads this page and saves the preference in this browser. **Disconnect** is shown only while connected, separately from Cancel and the primary action.
