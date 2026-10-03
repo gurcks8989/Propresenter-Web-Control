@@ -4,6 +4,8 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
+Current preview: **v0.1.0**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+
 **[Open the interactive demo](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
 The demo runs entirely in your browser with synthetic sample data. It cannot connect to ProPresenter or control real equipment. Try slide navigation, library browsing, media selection and screen toggles. Advanced controls such as capture, macros and transport are illustrative and do not reproduce all device behavior. Reload to reset sample state. For real use, download `propresenter_control_v9.html` instead.
@@ -95,7 +97,15 @@ Use only on a trusted local network. This file is not an authentication gateway.
 
 The GitHub Pages demo is served from `docs/`. After changing the controller or sample data, run `node scripts/build-demo.cjs` and commit the regenerated `docs/index.html`. The demo embeds its fixtures, uses a separate settings key, ignores host query overrides, and applies a Content Security Policy that blocks network connections and remote images.
 
-Version history is maintained in [CHANGELOG.md](CHANGELOG.md), independently of the interface. The header and browser title do not display a release number. The existing HTML filename and localStorage key are retained for compatibility; neither should be treated as the current release version. Future published releases can use repository tags, with corresponding changelog entries.
+Version history is maintained in [CHANGELOG.md](CHANGELOG.md). The [VERSION](VERSION) file, HTML application-version metadata, settings version label, and Git tag identify the release. The header and browser title do not display a release number. The existing HTML filename and localStorage key are retained for compatibility; their `V9` suffix is not the release version. The app does not yet check for updates or replace itself automatically.
+
+### Release checklist
+
+1. Update VERSION, the HTML version metadata/settings label, README version and CHANGELOG together.
+2. Rebuild the demo with `node scripts/build-demo.cjs` and verify the controller and demo.
+3. Commit the changes, create the matching `vX.Y.Z` tag, and push both.
+4. Publish a GitHub Release with change notes, validation scope and known limitations. Mark preview builds as prereleases.
+5. Attach the standalone HTML, favicon and a ZIP containing the controller, README, CHANGELOG and VERSION. Do not include local test data or personal screenshots. Never replace a published version with different code; issue a new version.
 
 All CSS, JavaScript, and UI translations are embedded in the HTML. `UI_TRANSLATIONS`, `tr()`, and the `ui` tagged template translate UI literals only. Keep API/user values outside translated literals. Static HTML labels are localized before initialization. When adding UI text, add matching dictionary entries and use `tr()` or `ui` for generated UI. Keep language options self-identifying in both languages.
 

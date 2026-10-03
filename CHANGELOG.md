@@ -1,13 +1,20 @@
 # Changelog
 
 Release history is tracked here rather than in the application's visible branding.
-No public release version has been assigned yet. When publishing a release, replace
-the Unreleased heading with the chosen version and release date, and use the same
-version for its repository tag.
+Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.1.0 — 2026-10-03 (Preview)
+
+Initial public prerelease. Not all controls have been verified against live equipment.
+
 ### Added
+
+- Isolated GitHub Pages demo with synthetic data and blocked external connections.
+- Browser-rendered application screenshot and setup documentation.
 
 - Configurable connection retry limits (0–10), connection preflight checks, and explicit disconnect/reconnect controls.
 - Embedded favicon and official control icons, with third-party attribution in the README.
