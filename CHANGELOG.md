@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Use white icons for inactive clear buttons, including Clear All and video input; retain red backgrounds for active layers.
+
 - Make the main hosted URL the real controller, with direct connection settings; move the isolated sample demo to an optional link.
 
 - Read actual layer status every second and highlight active clear buttons in red; clear stale slide previews when the slide layer is inactive.
