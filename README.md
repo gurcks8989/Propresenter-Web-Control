@@ -4,6 +4,10 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
+**[Open the interactive demo](https://gurcks8989.github.io/Propresenter-Web-Control/)**
+
+The demo runs entirely in your browser with synthetic sample data. It cannot connect to ProPresenter or control real equipment. Try slide navigation, library browsing, media selection and screen toggles. Advanced controls such as capture, macros and transport are illustrative and do not reproduce all device behavior. Reload to reset sample state. For real use, download `propresenter_control_v9.html` instead.
+
 ![ProPresenter Web Control — slide previews, playlist navigation, media browser and Show Controls](app-preview.png)
 
 *Actual browser rendering of the controller with sample data from an isolated local mock server. Thumbnails are placeholders, not live production output. The interface supports both Korean and English.*
@@ -88,6 +92,8 @@ This limitation review inspected documentation only. It did not test writes or t
 Use only on a trusted local network. This file is not an authentication gateway. Do not expose a production control API directly to the public internet. No private server address or credentials are bundled. Saved browser preferences are local and are not embedded in a redistributed HTML file.
 
 ## Development
+
+The GitHub Pages demo is served from `docs/`. After changing the controller or sample data, run `node scripts/build-demo.cjs` and commit the regenerated `docs/index.html`. The demo embeds its fixtures, uses a separate settings key, ignores host query overrides, and applies a Content Security Policy that blocks network connections and remote images.
 
 Version history is maintained in [CHANGELOG.md](CHANGELOG.md), independently of the interface. The header and browser title do not display a release number. The existing HTML filename and localStorage key are retained for compatibility; neither should be treated as the current release version. Future published releases can use repository tags, with corresponding changelog entries.
 

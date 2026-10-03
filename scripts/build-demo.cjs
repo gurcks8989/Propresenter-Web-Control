@@ -1,0 +1,18 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.join(__dirname, '..');
+let html = fs.readFileSync(path.join(root, 'propresenter_control_v9.html'), 'utf8');
+const fixture = fs.readFileSync(path.join(__dirname, 'demo-fixture.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(__dirname, 'demo-runtime.js'), 'utf8');
+html = html.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">`);
+html = html.replace('<body>', '<body><div style="height:32px;display:flex;align-items:center;justify-content:center;background:#164d68;color:white;font:12px system-ui">INTERACTIVE DEMO · Sample data only · No live equipment connection · Reload to reset</div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
+html = html.replace('<script>', `<script>${fixture}\n${runtime}</script><script>`);
+html = html.replaceAll('ppControlV9', 'ppControlDemo');
+html = html.replace('String(s ?? "")', 'String(typeof s === "string" && s.startsWith("https://demo.invalid/") ? window.demoThumbnail(s) : (s ?? ""))');
+html = html.replace('preview.src = src', 'preview.src = window.demoThumbnail(src)').replace('im.src = src', 'im.src = window.demoThumbnail(src)');
+html = html.replace('if (params.has("host")) config.host = params.get("host");', 'config.host = "https://demo.invalid"; config.disconnected = false;');
+html = html.replace('const host = $("#hostInput").value.trim();', 'const host = "https://demo.invalid";');
+html = html.replace('$("#settingsDialog").showModal();', '$("#hostInput").disabled = true; $("#portInput").disabled = true; $("#settingsDialog").showModal();');
+fs.mkdirSync(path.join(root, 'docs'), {recursive:true});
+fs.writeFileSync(path.join(root, 'docs/index.html'), html);
+fs.writeFileSync(path.join(root, 'docs/.nojekyll'), '');
