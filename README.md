@@ -4,7 +4,7 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
-Current preview: **v0.1.1**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+Current preview: **v0.1.2**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
 
 **[Open the interactive demo](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 

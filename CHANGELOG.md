@@ -7,6 +7,13 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 No changes yet.
 
+## 0.1.2 — 2026-10-03 (Preview)
+
+- Refreshed the public demo to include the wrapped-help-text translation fix.
+- Use an English-only Language field label when English is selected. Language names remain self-identifying.
+- Default empty connection fields to `localhost` and example port `1025`, without automatically connecting on first launch. Use the port configured in ProPresenter Network settings; 1025 is not a universal default.
+- Show the same defaults in demo settings while retaining its isolated mock transport.
+
 ## 0.1.1 — 2026-10-03 (Preview)
 
 - Fixed English translation of wrapped static help text in Settings.

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.1" />
+    <meta name="application-version" content="0.1.2" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -1844,7 +1844,7 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.1 · Preview</p>
+      <p class="muted">Version 0.1.2 · Preview</p>
       <label class="field"
         ><span>Language / 언어</span
         ><select id="languageInput" aria-label="Language">
@@ -2528,7 +2528,7 @@ function fixture() {
           "값이 없는 토큰": "Token has no value",
           "유효한 시간을 입력하세요": "Enter a valid time",
           "목록을 새로 읽었습니다": "Lists refreshed",
-          "Language / 언어": "Language / 언어",
+          "Language / 언어": "Language",
           한국어: "한국어",
           "라이브러리 검색": "Library search",
           라이브러리: "Library",
@@ -3029,7 +3029,7 @@ function fixture() {
           return u.origin;
         }
         function splitServer(address) {
-          if (!address.trim()) return { host: "", port: "1025" };
+          if (!address.trim()) return { host: "localhost", port: "1025" };
           const u = new URL(normalizeHost(address.trim()));
           return {
             host:
@@ -4746,7 +4746,7 @@ function fixture() {
           $("#portInput").value = address.port;
           $("#readOnlyInput").checked = config.readOnly;
           $("#retryLimitInput").value = config.maxRetries;
-          $("#hostInput").disabled = true; $("#portInput").disabled = true; $("#settingsDialog").showModal();
+          $("#hostInput").value = "localhost"; $("#portInput").value = "1025"; $("#hostInput").disabled = true; $("#portInput").disabled = true; $("#settingsDialog").showModal();
         };
         $("#disconnect").onclick = () => {
           try {
