@@ -1359,8 +1359,10 @@
         color: #999;
       }
       #clear {
-        display: block;
-        width: 34px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        width: 69px;
         flex-shrink: 0;
       }
       #clear .tiles {
@@ -1980,6 +1982,7 @@ function fixture() {
     },
   ];
   const D = {
+    "/v1/clear/groups": [{id: id("clear-all", "Clear All"), layers: ["music", "audio_effects", "messages", "props", "announcements", "presentation", "presentation_media", "video_input"], icon: "All"}],
     "/v1/media/playlists": [
       {
         id: id("media-folder", "예배 미디어"),
@@ -2808,6 +2811,8 @@ function fixture() {
               '<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="15" cy="17" r="3" fill="currentColor"/>',
             refresh:
               '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/>',
+            clearAll: '<circle cx="12" cy="12" r="9"/><path d="m8 8 8 8M16 8l-8 8"/>',
+            videoInput: '<rect x="2" y="6" width="13" height="12" rx="2" fill="currentColor" stroke="none"/><path d="m16 10 6-4v12l-6-4z" fill="currentColor" stroke="none"/>',
             leftPanel:
               '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 8h2M5 12h2"/>',
             rightPanel:
@@ -4247,6 +4252,7 @@ function fixture() {
             "/v1/stage/layouts",
             "/v1/audio/playlists",
             "/v1/capture/settings",
+            "/v1/clear/groups",
           ]);
           if (gen !== epoch) return;
           const libraries = arr(S.data["/v1/libraries"]);
@@ -4282,6 +4288,7 @@ function fixture() {
           await loadAudio($("#audioSelect").value);
           await loadMediaCatalog();
           renderCatalog();
+          renderClearButtons();
           renderTimers();
           renderStage();
         }
@@ -4872,6 +4879,27 @@ function fixture() {
             notice(e.message);
           }
         };
+        function renderClearButtons() {
+          const layers = ["music", "audio_effects", "messages", "props", "announcements", "presentation", "presentation_media", "video_input"];
+          const all = arr(S.data["/v1/clear/groups"]).find(group =>
+            uid(group) && layers.every(layer => arr(group.layers).includes(layer)));
+          const allLabel = language === "en" ? "Clear all layers" : "전체 레이어 지우기";
+          const unavailable = language === "en" ? "No clear group covering all layers is available" : "모든 레이어를 지우는 그룹이 없습니다";
+          $("#clear").innerHTML =
+            `<button class="tile danger" id="clearAll" data-write ${all ? `data-command="/v1/clear/group/${E(enc(uid(all)))}/trigger"` : "disabled"} title="${E(all ? allLabel : unavailable)}" aria-label="${E(allLabel)}">${icon("clearAll")}</button>` +
+            '<div class="tiles">' +
+            [
+              ["audio", tr("오디오"), "audio"],
+              ["messages", tr("메시지"), "messages"],
+              ["props", "Props", "props"],
+              ["announcements", "Announcements", "announcement"],
+              ["slide", tr("슬라이드"), "foreground"],
+              ["media", tr("미디어"), "media"],
+              ["video_input", tr("비디오 입력"), "videoInput"],
+            ].map(([key, label, glyph]) =>
+              ui`<button class="tile danger" title="${label} 지우기" aria-label="${label} 지우기" data-write data-command="/v1/clear/layer/${key}">${icon(glyph)}</button>`
+            ).join("") + "</div>";
+        }
         async function boot() {
           try {
             base = config.disconnected ? "" : normalizeHost(config.host);
@@ -4881,23 +4909,7 @@ function fixture() {
           locked();
           initTransport();
           renderGrid();
-          $("#clear").innerHTML =
-            '<div class="tiles">' +
-            [
-              ["slide", tr("슬라이드")],
-              ["media", tr("미디어")],
-              ["announcements", "Announcements"],
-              ["props", "Props"],
-              ["messages", tr("메시지")],
-              ["audio", tr("오디오")],
-              ["video_input", tr("비디오 입력")],
-            ]
-              .map(
-                ([k, l]) =>
-                  ui`<button class="tile danger" title="${l} 지우기" aria-label="${l} 지우기" data-write data-command="/v1/clear/layer/${k}">${k === "video_input" ? "▣" : icon({ slide: "foreground", media: "media", announcements: "announcement", props: "props", messages: "messages", audio: "audio" }[k])}</button>`,
-              )
-              .join("") +
-            "</div>";
+          renderClearButtons();
           if (!base) {
             if (config.disconnected) {
               $("#connection").className = "grow connection offline";

@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Match the native clear-layer order, use a camera icon for video input, and add a separate Clear All button connected to an all-layer clear group returned by the server (disabled if none exists).
+
 - Poll slides, playback and output status approximately every second and catalogs every 30 seconds; remove toolbar and media refresh buttons.
 
 - Reversed the slide size slider so moving right enlarges thumbnails; renamed its accessible label to Slide size.

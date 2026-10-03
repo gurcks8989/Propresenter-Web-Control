@@ -40,6 +40,7 @@ function fixture() {
     },
   ];
   const D = {
+    "/v1/clear/groups": [{id: id("clear-all", "Clear All"), layers: ["music", "audio_effects", "messages", "props", "announcements", "presentation", "presentation_media", "video_input"], icon: "All"}],
     "/v1/media/playlists": [
       {
         id: id("media-folder", "예배 미디어"),
