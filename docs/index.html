@@ -1578,7 +1578,7 @@
       }
     </style>
   </head>
-  <body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">ProPresenter Web Control <a href="demo.html" style="color:white">샘플 데모 / Sample demo</a><a href="control.html" download="propresenter_web_control.html" style="color:white">HTML 다운로드 / Download</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>
+  <body><div id="hostingBanner" style="visibility:hidden;height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">ProPresenter Web Control <a href="demo.html" data-banner-label="sample" style="color:white"></a><a href="control.html" download="propresenter_web_control.html" data-banner-label="download" style="color:white"></a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>
     <header class="top">
       <div class="brand">
         <svg
@@ -4702,5 +4702,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#hostInput').closest('label').before(note);
   document.querySelector('#settings').click();
 });
-</script></body>
+</script><script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const lang = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+    const labels = {
+      demo: {ko:'데모 · 샘플 데이터', en:'DEMO · Sample data only'},
+      connect: {ko:'실제 연결 →', en:'Live connection →'},
+      sample: {ko:'샘플 데모', en:'Sample demo'},
+      download: {ko:'HTML 다운로드', en:'Download HTML'}
+    };
+    document.querySelectorAll('[data-banner-label]').forEach(el => {
+      el.textContent = labels[el.dataset.bannerLabel][lang];
+    });
+    document.querySelector('#hostingBanner').style.visibility = 'visible';
+  });
+  </script></body>
 </html>

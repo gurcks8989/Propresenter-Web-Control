@@ -5,8 +5,25 @@ let html = fs.readFileSync(path.join(root, 'propresenter_control_v9.html'), 'utf
 const source = html;
 const fixture = fs.readFileSync(path.join(__dirname, 'demo-fixture.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(__dirname, 'demo-runtime.js'), 'utf8');
+function localizeBanner(page) {
+  return page.replace('</body>', `<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const lang = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+    const labels = {
+      demo: {ko:'데모 · 샘플 데이터', en:'DEMO · Sample data only'},
+      connect: {ko:'실제 연결 →', en:'Live connection →'},
+      sample: {ko:'샘플 데모', en:'Sample demo'},
+      download: {ko:'HTML 다운로드', en:'Download HTML'}
+    };
+    document.querySelectorAll('[data-banner-label]').forEach(el => {
+      el.textContent = labels[el.dataset.bannerLabel][lang];
+    });
+    document.querySelector('#hostingBanner').style.visibility = 'visible';
+  });
+  </script></body>`);
+}
 html = html.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">`);
-html = html.replace('<body>', '<body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#164d68;color:white;font:12px system-ui">DEMO · Sample data only <a href="live.html" style="color:white">실제 연결 / Live connection →</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
+html = html.replace('<body>', '<body><div id="hostingBanner" style="visibility:hidden;height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#164d68;color:white;font:12px system-ui"><span data-banner-label="demo"></span><a href="index.html" data-banner-label="connect" style="color:white"></a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
 html = html.replace('<script>', `<script>${fixture}\n${runtime}</script><script>`);
 html = html.replaceAll('ppControlV9', 'ppControlDemo');
 html = html.replace('String(s ?? "")', 'String(typeof s === "string" && s.startsWith("https://demo.invalid/") ? window.demoThumbnail(s) : (s ?? ""))');
@@ -27,13 +44,13 @@ html = html.replace('$("#settingsDialog").showModal();', `
     : '데모: 주소와 포트를 입력·저장할 수 있지만 샘플 데이터만 사용합니다. 실제 장비에 연결하려면 상단의 실제 연결을 선택하세요.';
   $("#settingsDialog").showModal();`);
 fs.mkdirSync(path.join(root, 'docs'), {recursive:true});
-fs.writeFileSync(path.join(root, 'docs/demo.html'), html);
+fs.writeFileSync(path.join(root, 'docs/demo.html'), localizeBanner(html));
 let live = source.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; form-action 'none'; base-uri 'none'">`);
 live = live.replaceAll('ppControlV9', 'ppControlWebLive');
 // A fresh page always waits for an explicit Connect; URL parameters cannot arm controls.
 live = live.replace('if (params.has("host")) config.host = params.get("host");', 'config.disconnected = true; config.readOnly = true;');
 live = live.replace('config.readOnly = params.get("readonly") !== "0";', 'config.readOnly = true;');
-live = live.replace('<body>', '<body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">ProPresenter Web Control <a href="demo.html" style="color:white">샘플 데모 / Sample demo</a><a href="control.html" download="propresenter_web_control.html" style="color:white">HTML 다운로드 / Download</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
+live = live.replace('<body>', '<body><div id="hostingBanner" style="visibility:hidden;height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#75451a;color:white;font:12px system-ui">ProPresenter Web Control <a href="demo.html" data-banner-label="sample" style="color:white"></a><a href="control.html" download="propresenter_web_control.html" data-banner-label="download" style="color:white"></a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>');
 live = live.replace('</body>', `<script>
 document.addEventListener('DOMContentLoaded', () => {
   const en = document.documentElement.lang === 'en';
@@ -46,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#settings').click();
 });
 </script></body>`);
-fs.writeFileSync(path.join(root, 'docs/live.html'), live);
-fs.writeFileSync(path.join(root, 'docs/index.html'), live);
+fs.writeFileSync(path.join(root, 'docs/live.html'), localizeBanner(live));
+fs.writeFileSync(path.join(root, 'docs/index.html'), localizeBanner(live));
 fs.writeFileSync(path.join(root, 'docs/control.html'), source);
 fs.writeFileSync(path.join(root, 'docs/.nojekyll'), '');

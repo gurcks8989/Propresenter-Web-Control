@@ -1578,7 +1578,7 @@
       }
     </style>
   </head>
-  <body><div style="height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#164d68;color:white;font:12px system-ui">DEMO · Sample data only <a href="live.html" style="color:white">실제 연결 / Live connection →</a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>
+  <body><div id="hostingBanner" style="visibility:hidden;height:32px;display:flex;gap:16px;align-items:center;justify-content:center;background:#164d68;color:white;font:12px system-ui"><span data-banner-label="demo"></span><a href="index.html" data-banner-label="connect" style="color:white"></a></div><style>.workspace{height:calc(100dvh - 137px)!important}</style>
     <header class="top">
       <div class="brand">
         <svg
@@ -5067,5 +5067,19 @@ function fixture() {
         });
       })();
     </script>
-  </body>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const lang = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+    const labels = {
+      demo: {ko:'데모 · 샘플 데이터', en:'DEMO · Sample data only'},
+      connect: {ko:'실제 연결 →', en:'Live connection →'},
+      sample: {ko:'샘플 데모', en:'Sample demo'},
+      download: {ko:'HTML 다운로드', en:'Download HTML'}
+    };
+    document.querySelectorAll('[data-banner-label]').forEach(el => {
+      el.textContent = labels[el.dataset.bannerLabel][lang];
+    });
+    document.querySelector('#hostingBanner').style.visibility = 'visible';
+  });
+  </script></body>
 </html>
