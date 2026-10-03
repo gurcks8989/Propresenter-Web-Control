@@ -40,6 +40,7 @@ function fixture() {
     },
   ];
   const D = {
+    "/v1/status/layers": {audio:false,messages:false,props:false,announcements:false,slide:true,media:true,video_input:false},
     "/v1/clear/groups": [{id: id("clear-all", "Clear All"), layers: ["music", "audio_effects", "messages", "props", "announcements", "presentation", "presentation_media", "video_input"], icon: "All"}],
     "/v1/media/playlists": [
       {

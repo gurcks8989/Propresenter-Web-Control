@@ -5,6 +5,8 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+- Read actual layer status every second and highlight active clear buttons in red; clear stale slide previews when the slide layer is inactive.
+
 - Restyle toolbar output toggles as status rings, show the current Look beneath its icon, and replace the Live bullseye with a broadcast-wave icon.
 
 - Unlock demo address and port fields, validate and persist their values, and explain that actual equipment connections require Live mode.

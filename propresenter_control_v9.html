@@ -1398,6 +1398,12 @@
         align-items: center;
         justify-content: center;
       }
+      #clear .tile.layer-active {
+        background: #b74343;
+        color: #fff;
+        box-shadow: inset 0 0 0 1px #ef8585;
+      }
+      #clear .tile.layer-active:hover { background: #cd5050; }
       .preview-caption {
         font-size: 10px;
         padding: 5px 10px;
@@ -2595,6 +2601,7 @@
           retriesStopped = false;
         function connectionFailed() {
           online = false;
+          updateClearStates();
           nextConnectionCheck = Date.now() + 5000;
           for (const controller of pendingRequests) controller.abort();
           locked();
@@ -3175,7 +3182,8 @@
             $("#previewEmpty").textContent = tr("성경 화면으로 추정");
             return;
           }
-          if (S.currentId && S.current >= 0) {
+          const slideCleared = online && !S.errors["/v1/status/layers"] && S.data["/v1/status/layers"]?.slide === false;
+          if (S.currentId && S.current >= 0 && !slideCleared) {
             const src =
               base +
               (uid(S.p) === S.currentId
@@ -3202,7 +3210,7 @@
             const n = Number(el.dataset.slide);
             el.classList.toggle(
               "current",
-              uid(S.p) === S.currentId && n === S.current,
+              !slideCleared && uid(S.p) === S.currentId && n === S.current,
             );
             el.classList.toggle("pending", n === S.pending);
           });
@@ -3683,6 +3691,8 @@
           }
         }
         function renderStatus() {
+          updateClearStates();
+          updateMarkers();
           for (const key of ["audience", "stage"]) {
             const v = S.data["/v1/status/" + key + "_screens"];
             $("#" + key).classList.toggle("on", v === true);
@@ -3954,6 +3964,7 @@
           renderStage();
         }
         const statusPaths = [
+          "/v1/status/layers",
           "/v1/status/audience_screens",
           "/v1/status/stage_screens",
           "/v1/look/current",
@@ -4540,6 +4551,20 @@
             notice(e.message);
           }
         };
+        function updateClearStates() {
+          const states = online && !S.errors["/v1/status/layers"] ? S.data["/v1/status/layers"] : null;
+          for (const button of $$("#clear [data-command]")) {
+            const layer = button.dataset.command.split("/").at(-1);
+            const active = button.id === "clearAll"
+              ? states && Object.values(states).some(value => value === true)
+              : states?.[layer] === true;
+            button.classList.toggle("layer-active", !!active);
+            const label = button.getAttribute("aria-label");
+            button.title = label + " · " + (states
+              ? (active ? (language === "en" ? "Active — click to clear" : "활성 · 누르면 지워집니다") : (language === "en" ? "Inactive" : "비활성"))
+              : (language === "en" ? "Status unavailable" : "상태 확인 불가"));
+          }
+        }
         function renderClearButtons() {
           const layers = ["music", "audio_effects", "messages", "props", "announcements", "presentation", "presentation_media", "video_input"];
           const all = arr(S.data["/v1/clear/groups"]).find(group =>
@@ -4560,6 +4585,7 @@
             ].map(([key, label, glyph]) =>
               ui`<button class="tile danger" title="${label} 지우기" aria-label="${label} 지우기" data-write data-command="/v1/clear/layer/${key}">${icon(glyph)}</button>`
             ).join("") + "</div>";
+          updateClearStates();
         }
         async function boot() {
           try {

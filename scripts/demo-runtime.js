@@ -14,12 +14,17 @@
     let result;
     const media=p.match(/^\/v1\/media\/playlist\/([^/]+)\/([^/]+)\/trigger$/);
     const slide=p.match(/^\/v1\/presentation\/song-[ab]\/(\d+)\/trigger$/);
-    if(media){
+    if(p.startsWith('/v1/clear/layer/')) {
+      mock.D['/v1/status/layers'][p.split('/').at(-1)] = false; result=null;
+    } else if(p === '/v1/clear/group/clear-all/trigger') {
+      for(const key of Object.keys(mock.D['/v1/status/layers'])) mock.D['/v1/status/layers'][key]=false;
+      result=null;
+    } else if(media){
       const list=mock.D['/v1/media/playlist/'+media[1]];
       const item=list?.items.find(x=>x.id.uuid===media[2]);
       if(!item) return {ok:false,status:404,text:async()=>''};
-      mock.D['/v1/media/playlist/active']={playlist:list.id,item:item.id}; result=null;
-    } else if(slide){mock.setCurrent(Math.min(17,Number(slide[1])));result=null;}
+      mock.D['/v1/media/playlist/active']={playlist:list.id,item:item.id}; mock.D['/v1/status/layers'].media=true; result=null;
+    } else if(slide){mock.setCurrent(Math.min(17,Number(slide[1])));mock.D['/v1/status/layers'].slide=true;result=null;}
     else {
       try { result=mock.handle(url.href,method,options.body===undefined?undefined:JSON.parse(options.body)); }
       catch { return {ok:false,status:404,text:async()=>''}; }
