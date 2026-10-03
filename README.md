@@ -4,6 +4,10 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
+![ProPresenter Web Control — slide previews, playlist navigation, media browser and Show Controls](app-preview.png)
+
+*Actual browser rendering of the controller with sample data from an isolated local mock server. Thumbnails are placeholders, not live production output. The interface supports both Korean and English.*
+
 1. Open `propresenter_control_v9.html` in a modern browser.
 2. In **Settings**, choose **Language → English** or **한국어**.
 3. Enter the server address and **Port** in their separate fields, using the values shown in ProPresenter's network settings. For example, use `localhost` and port `1025` when that matches your local setup. An `http://` or `https://` prefix is supported. Previously saved combined addresses are split automatically; pasting an address with a port also fills the Port field when you leave the address field. Ports must be integers from 1 to 65535. Use the actual configured port.
