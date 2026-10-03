@@ -5,6 +5,11 @@ Versions follow semantic versioning and match the VERSION file and Git tags.
 
 ## Unreleased
 
+## 0.1.4 — 2026-10-03 (Preview)
+
+- Respect the current slide's API dimensions (thumbnail dimensions as fallback) without stretching the preview to the clear controls' height.
+- Remove the preview caption, separate capture controls into a dialog opened from Live, and align Audience, Stage and Looks toolbar controls.
+
 ## 0.1.3 — 2026-10-03 (Preview)
 
 - Add persisted update settings (automatic before connection, notify only, or off), bounded pre-connection checks, manual check/apply, changelog and HTML download. Connected sessions never auto-reload; local HTML requires replacement. Failed checks allow connection, and a one-attempt guard prevents reload loops.

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.3" />
+    <meta name="application-version" content="0.1.4" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -1226,8 +1226,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
-        font-size: 10px;
+        gap: 4px;
+        font-size: 11px;
         justify-content: center;
         height: 48px;
       }
@@ -1242,7 +1242,9 @@
         width: 22px;
         height: 22px;
       }
-      .top .toolbar-look select { background: transparent; border-color: transparent; text-align: center; height: 22px; padding: 0 4px; }
+      .top .toolbar-look select { background: transparent; border-color: transparent; text-align: center; height: 16px; padding: 0 4px; font-size: 11px; width: 110px; }
+      .top #audience, .top #stage { width: 58px; }
+      .top #audience .ui-icon, .top #stage .ui-icon { width: 22px; height: 22px; }
       .top #audience, .top #stage { background: transparent; border-color: transparent; color: #ddd; }
       .top #audience .ui-icon, .top #stage .ui-icon { color: #f26868; }
       .top #audience.on .ui-icon, .top #stage.on .ui-icon { color: #8ccc57; }
@@ -1348,6 +1350,7 @@
       }
       .preview-monitor {
         flex: 1;
+        align-self: flex-start;
         min-width: 0;
         background: #000;
         display: grid;
@@ -1876,7 +1879,7 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.3 · Preview</p>
+      <p class="muted">Version 0.1.4 · Preview</p>
       <section id="updateSettings"></section>
       <label class="field"
         ><span>Language / 언어</span
@@ -2328,7 +2331,7 @@
           const pane = document.createElement("section");
           pane.className = "preview-shell";
           pane.innerHTML = tr(
-            '<div class="preview-heading">CURRENT SLIDE · 현재 슬라이드</div><div class="preview-stage"><div class="preview-monitor"><img id="currentPreview" hidden alt="현재 슬라이드 썸네일"><span id="previewEmpty">활성 슬라이드 없음</span></div></div><div class="preview-caption">슬라이드 썸네일 · 영상/Props 합성 송출 화면 아님</div>',
+            '<div class="preview-heading">CURRENT SLIDE · 현재 슬라이드</div><div class="preview-stage"><div class="preview-monitor"><img id="currentPreview" hidden alt="현재 슬라이드 썸네일"><span id="previewEmpty">활성 슬라이드 없음</span></div></div>',
           );
           pane.querySelector(".preview-stage").append($("#clear"));
           controls.prepend(pane);
@@ -2364,7 +2367,6 @@
             ["messages", "➤", tr("메시지"), [$("#messages")]],
             ["props", "▱", "Props", [$("#props")]],
             ["macros", "M", tr("매크로"), [$("#macros")]],
-            ["capture", "◉", "Live", [$("#captureStart").closest("details")]],
           ];
           for (const [key, icon, label, elements] of sections) {
             const button = document.createElement("button");
@@ -2386,6 +2388,14 @@
             show.querySelector(".show-content").append(panel);
           }
           controls.append(show);
+          const captureDialog = document.createElement("dialog");
+          captureDialog.id = "captureDialog";
+          captureDialog.innerHTML = `<h2>${language === "ko" ? "녹화 및 송출" : "Recording & Streaming"}</h2><button type="button" id="closeCapture">${language === "ko" ? "닫기" : "Close"}</button>`;
+          const captureDetails = $("#captureStart").closest("details");
+          captureDetails.open = true;
+          captureDialog.insertBefore(captureDetails, captureDialog.lastElementChild);
+          document.body.append(captureDialog);
+          $("#closeCapture").onclick = () => captureDialog.close();
           // Keep status labels attached for the existing status renderer.
           const status = document.createElement("div");
           status.hidden = true;
@@ -3183,6 +3193,14 @@
         }
         function updateMarkers() {
           const preview = $("#currentPreview");
+          const monitor = preview.parentElement;
+          const size = uid(S.p) === S.currentId ? S.slides[S.current]?.slide?.size : null;
+          const hasSize = Number(size?.width) > 0 && Number(size?.height) > 0;
+          if (hasSize) monitor.style.aspectRatio = `${size.width} / ${size.height}`;
+          preview.onload = () => {
+            if (!hasSize && preview.naturalWidth && preview.naturalHeight)
+              monitor.style.aspectRatio = `${preview.naturalWidth} / ${preview.naturalHeight}`;
+          };
           if (hideBibleSlides()) {
             preview.hidden = true;
             preview.removeAttribute("src");
@@ -4229,6 +4247,10 @@
             return;
           }
           if (b.dataset.show) {
+            if (b.dataset.show === "capture") {
+              $("#captureDialog").showModal();
+              return;
+            }
             $$(".show-pane").forEach((el) =>
               el.classList.toggle(
                 "selected",
