@@ -27,7 +27,7 @@ html = html.replace('<body>', '<body><div id="hostingBanner" style="visibility:h
 html = html.replace('<script>', `<script>${fixture}\n${runtime}</script><script>`);
 html = html.replaceAll('ppControlV9', 'ppControlDemo');
 html = html.replace('String(s ?? "")', 'String(typeof s === "string" && s.startsWith("https://demo.invalid/") ? window.demoThumbnail(s) : (s ?? ""))');
-html = html.replace('preview.src = src', 'preview.src = window.demoThumbnail(src)').replace('im.src = src', 'im.src = window.demoThumbnail(src)');
+html = html.replace('preview.src = src', 'preview.src = window.demoThumbnail(src)').replace('im.src = src', 'im.src = window.demoThumbnail(src)').replace('image.src = src', 'image.src = window.demoThumbnail(src)');
 html = html.replace('if (params.has("host")) config.host = params.get("host");', 'config.host = "https://demo.invalid"; config.disconnected = false;');
 html = html.replace('const address = splitServer(config.host);', 'const address = splitServer(config.demoAddress || "");');
 html = html.replace('const next = serverFromFields(),', 'const demoAddress = serverFromFields(); const next = "https://demo.invalid",');

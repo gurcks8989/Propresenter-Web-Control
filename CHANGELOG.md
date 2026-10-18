@@ -3,7 +3,14 @@
 Release history is tracked here rather than in the application's visible branding.
 Versions follow semantic versioning and match the VERSION file and Git tags.
 
-## Unreleased
+## 0.1.6 — 2026-10-18 (Preview)
+
+- Show already-active media from server state; when only media is active, display its thumbnail in the large upper preview. This is not a composited output feed.
+- Reorganize the header into four groups, keep connection names on one line, remove the duplicate clock, and default the inspector to macros.
+- Close settings on outside click and improve standard/WebKit fullscreen toggling with a constant button label. The reported local-file fullscreen issue remains unverified on the affected browser.
+- Add fullscreen toggle (including Escape exit) and direct connection using saved settings.
+- Ignore the previous slide index briefly after a successful cue trigger while waiting for server confirmation; resume authoritative state after confirmation, another state change, or a three-second limit.
+- Keep viewport scrolling inside panels and trigger media directly from card clicks, respecting read-only mode.
 
 ## 0.1.5 — 2026-10-03 (Preview)
 

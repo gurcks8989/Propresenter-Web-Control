@@ -4,7 +4,7 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
-Current preview: **v0.1.5**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+Current preview: **v0.1.6**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
 
 **[Open ProPresenter Web Control](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 
@@ -107,7 +107,7 @@ Use only on a trusted local network. This file is not an authentication gateway.
 
 The GitHub Pages demo is served from `docs/`. After changing the controller or sample data, run `node scripts/build-demo.cjs` and commit the regenerated `docs/index.html`. The demo embeds its fixtures, uses a separate settings key, ignores host query overrides, and applies a Content Security Policy that blocks network connections and remote images.
 
-Version history is maintained in [CHANGELOG.md](CHANGELOG.md). The [VERSION](VERSION) file, HTML application-version metadata, settings version label, and Git tag identify the release. The header and browser title do not display a release number. The existing HTML filename and localStorage key are retained for compatibility; their `V9` suffix is not the release version. The app does not yet check for updates or replace itself automatically.
+Version history is maintained in [CHANGELOG.md](CHANGELOG.md). The [VERSION](VERSION) file, HTML application-version metadata, settings version label, and Git tag identify the release. The header and browser title do not display a release number. The legacy localStorage key is retained for compatibility. Update checks are configurable in Settings and run before connecting; connected sessions never automatically reload. Standalone HTML users must download and replace their file.
 
 ### Release checklist
 
