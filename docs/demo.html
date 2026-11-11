@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.6" />
+    <meta name="application-version" content="0.1.7" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -1431,6 +1431,11 @@
         object-fit: contain;
         position: absolute;
       }
+      /* Preserve thumbnail alpha; never remove black pixels or blend slide colors. */
+      .preview-monitor #activeMediaImage { z-index: 0; }
+      .preview-monitor #currentPreview { z-index: 1; background: transparent; }
+      .preview-monitor img[hidden] { display: none; }
+      .preview-monitor #previewEmpty { position: relative; z-index: 2; }
       .preview-monitor span {
         padding: 12px;
         text-align: center;
@@ -1636,6 +1641,18 @@
       .top .header-navigation .connection { max-width: none; flex: 0 0 auto; white-space: nowrap; }
       .top .header-navigation .connection .led { flex-shrink: 0; }
       .top .toolbar-utilities { flex-shrink: 0; }
+      .top .toolbar-utilities #openSlideExport {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        padding: 4px 7px;
+        flex-shrink: 0;
+      }
+      .top .toolbar-utilities #openSlideExport .ui-icon {
+        width: 19px;
+        height: 19px;
+      }
       @media (max-width: 1000px) {
         .top { display: flex; overflow-x: auto; }
         .top .header-identity { flex: 0 0 auto; }
@@ -1812,6 +1829,7 @@
             <button id="viewPreview" aria-pressed="true">▧ 미리보기</button
             ><button id="viewText" aria-pressed="false">T 텍스트</button>
           </div>
+          <button id="openSlideExport" class="icon-only" type="button" title="내보내기" aria-label="내보내기"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 4H4v16h16v-6M13 3h8v8M21 3 10 14"/></svg></button>
           <span class="badge" id="viewBadge">LIVE</span
           ><button id="followLive" class="mini">현재 화면으로</button>
         </div>
@@ -1991,7 +2009,7 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.6 · Preview</p>
+      <p class="muted">Version 0.1.7 · Preview</p>
       <section id="updateSettings"></section>
       <label class="field"
         ><span>Language / 언어</span
@@ -2818,7 +2836,7 @@ function fixture() {
             '<button id="toggleMedia" aria-pressed="true">▧ Media</button>';
           actions.append($("#audience"), $("#stage"), $("#looks"));
           const live = document.createElement("button");
-          live.textContent = "◉ Live";
+          live.textContent = language === "ko" ? "◉ 라이브" : "◉ Live";
           live.dataset.show = "capture";
           actions.append(live);
           $(".top").insertBefore(actions, $("#settings"));
@@ -2835,7 +2853,7 @@ function fixture() {
           utilities.className = "toolbar-utilities";
           actions.before(toolsGroup);
           toolsGroup.append(actions, utilities);
-          utilities.append($("#toggleRight"), fullscreen, quickConnect, $("#settings"));
+          utilities.append($("#toggleRight"), $("#openSlideExport"), fullscreen, quickConnect, $("#settings"));
           const isFullscreen = () => Boolean(document.fullscreenElement || document.webkitFullscreenElement || document.webkitIsFullScreen);
           const syncFullscreen = () => {
             const active = isFullscreen();
@@ -3177,7 +3195,7 @@ function fixture() {
           iconTextButton(
             $('.toolbar-actions [data-show="capture"]'),
             "broadcast",
-            "Live",
+            language === "ko" ? "라이브" : "Live",
           );
           for (const [id, key, label] of [
             ["toggleMedia", "media", tr("미디어")],
@@ -3956,10 +3974,10 @@ function fixture() {
           $("#cuePrev").disabled = Boolean(S.browse);
           $("#cueNext").disabled = Boolean(S.browse);
           $("#viewBadge").textContent = S.browse
-            ? "LIBRARY PREVIEW"
+            ? (language === "ko" ? "라이브러리 미리보기" : "LIBRARY PREVIEW")
             : uid(p) === S.currentId
-              ? "LIVE"
-              : "FOCUSED";
+              ? (language === "ko" ? "라이브" : "LIVE")
+              : (language === "ko" ? "선택됨" : "FOCUSED");
           $("#viewPreview").setAttribute(
             "aria-pressed",
             String(config.viewMode === "preview"),
@@ -4739,7 +4757,7 @@ function fixture() {
           const startedAt = Date.now();
           const gen = epoch;
           try {
-            if (!base || updateChecking || updateNavigating) return;
+            if (!base || updateChecking || updateNavigating || localUpdateBusy) return;
             if (!(await ensureConnection())) return;
             await updateSlides();
             if (gen !== epoch) return;
@@ -5356,12 +5374,12 @@ function fixture() {
           const monitor = $(".preview-monitor"), empty = $("#previewEmpty");
           const mediaOnly = active && S.data["/v1/status/layers"]?.slide === false;
           const wasLarge = image.parentElement === monitor;
-          if (mediaOnly) {
-            monitor.append(image);
-            $("#currentPreview").hidden = true;
+          if (active) {
+            monitor.prepend(image);
+            if (mediaOnly) $("#currentPreview").hidden = true;
             empty.hidden = true;
             const applyMediaRatio = () => {
-              if (image.parentElement !== monitor) return;
+              if (image.parentElement !== monitor || S.data["/v1/status/layers"]?.slide !== false) return;
               const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 16 / 9;
               monitor.style.aspectRatio = String(ratio);
               document.documentElement.style.setProperty('--preview-ratio', ratio);
@@ -5373,18 +5391,20 @@ function fixture() {
             empty.hidden = !$("#currentPreview").hidden;
             empty.textContent = tr("활성 슬라이드 없음");
           }
-          $(".preview-heading").textContent = mediaOnly
+          $(".preview-heading").textContent = active && !mediaOnly
+            ? (language === "ko" ? "현재 슬라이드 + 배경" : "Current slide + background")
+            : mediaOnly
             ? (language === "ko" ? "현재 미디어 / 배경" : "Active media / background")
             : (language === "ko" ? "CURRENT SLIDE · 현재 슬라이드" : "CURRENT SLIDE · Current slide");
-          panel.hidden = !active || mediaOnly;
+          panel.hidden = true;
           const showMediaError = (message) => {
             $("#activeMediaNote").textContent = message;
-            if (image.parentElement === monitor) {
+            if (image.parentElement === monitor && $("#currentPreview").hidden) {
               empty.hidden = false;
               empty.textContent = message;
             }
           };
-          if (!active) { image.removeAttribute("src"); image.dataset.source = ""; return; }
+          if (!active) { image.hidden = true; image.removeAttribute("src"); image.dataset.source = ""; return; }
           const item = S.data["/v1/media/playlist/active"]?.item;
           const id = uid(item);
           $("#activeMediaLabel").textContent = language === "ko" ? "현재 미디어 / 배경" : "Active media / background";
@@ -5455,14 +5475,85 @@ function fixture() {
           for (let i = 0; i < 3; i++) { if (x[i] !== y[i]) return x[i] > y[i]; }
           return false;
         }
-        function applyUpdate() {
+        const fixedUpdatePath = 'C:\\propresenter_web_control\\propresenter_web_control.html';
+        const atFixedUpdatePath = () => location.protocol === 'file:' && !location.hostname && decodeURIComponent(location.pathname).toLowerCase() === '/c:/propresenter_web_control/propresenter_web_control.html';
+        let localUpdateHandle = null, localUpdateBusy = null;
+        function updateHandleStore(handle) {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open('ppLocalUpdater', 1);
+            request.onupgradeneeded = () => request.result.createObjectStore('files');
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              const db = request.result;
+              const tx = db.transaction('files', handle ? 'readwrite' : 'readonly');
+              const op = handle ? tx.objectStore('files').put(handle, 'fixed') : tx.objectStore('files').get('fixed');
+              tx.oncomplete = () => { db.close(); resolve(handle || op.result); };
+              tx.onerror = tx.onabort = () => { db.close(); reject(tx.error || Error('Storage failed')); };
+            };
+          });
+        }
+        async function authorizeLocalUpdate() {
+          try {
+            if (online || window.ppDemoMode) throw Error(updateText('Disconnect first.','먼저 연결을 해제하세요.'));
+            if (!atFixedUpdatePath()) throw Error(updateText('Open the HTML at: ','다음 위치의 HTML을 여세요: ') + fixedUpdatePath);
+            if (!window.showOpenFilePicker) throw Error(updateText('This browser does not support file update permission.','이 브라우저는 파일 업데이트 권한을 지원하지 않습니다.'));
+            const [handle] = await showOpenFilePicker({multiple:false, types:[{description:'ProPresenter Web Control', accept:{'text/html':['.html']}}]});
+            if (handle.name !== 'propresenter_web_control.html') throw Error('Select propresenter_web_control.html');
+            if (await handle.requestPermission({mode:'readwrite'}) !== 'granted') throw Error(updateText('Write permission was not granted.','쓰기 권한이 승인되지 않았습니다.'));
+            const contents = await (await handle.getFile()).text();
+            if (!contents.includes('name="application-version"') || !contents.includes('ppControlDemo')) throw Error(updateText('Not a controller file.','컨트롤러 파일이 아닙니다.'));
+            // File handles do not expose absolute paths; require explicit confirmation.
+            if (!confirm(updateText('Confirm the selected file is exactly: ','선택한 파일의 위치가 다음과 정확히 일치하는지 확인하세요: ') + fixedUpdatePath)) return;
+            await updateHandleStore(handle);
+            localUpdateHandle = handle;
+            config.updateMode = 'auto';
+            localStorage.setItem('ppControlDemo', JSON.stringify(config));
+            $('#updateMode').value = 'auto';
+            updateMessage(updateText('Permission saved. Updates will apply before connecting.','권한을 저장했습니다. 연결 전에 자동 업데이트합니다.'));
+          } catch (e) { updateMessage(e.name === 'AbortError' ? updateText('Cancelled.','취소했습니다.') : e.message); }
+        }
+        async function applyLocalUpdate() {
+          if (localUpdateBusy) return localUpdateBusy;
+          localUpdateBusy = (async () => {
+            let stream;
+            try {
+              if (!atFixedUpdatePath()) throw Error(updateText('Automatic file updates require: ','자동 파일 업데이트는 다음 위치에서만 가능합니다: ') + fixedUpdatePath);
+              localUpdateHandle ||= await updateHandleStore();
+              if (!localUpdateHandle || await localUpdateHandle.queryPermission({mode:'readwrite'}) !== 'granted') throw Error(updateText('Select Authorize file update before connecting.','연결 전에 파일 업데이트 권한 승인 버튼을 눌러주세요.'));
+              const version = updateAvailable.version;
+              if (sessionStorage.getItem('ppUpdateAttempt') === version) throw Error(updateText('Reload did not apply the update. Reopen the fixed file.','업데이트가 반영되지 않았습니다. 지정된 파일을 다시 여세요.'));
+              const response = await fetch(updateHome + 'control.html?appVersion=' + encodeURIComponent(version), {cache:'no-store', signal:AbortSignal.timeout(15000)});
+              if (!response.ok) throw Error('HTTP ' + response.status);
+              const html = await response.text();
+              const parsed = new DOMParser().parseFromString(html, 'text/html');
+              if (parsed.querySelector('meta[name="application-version"]')?.content !== version || !html.includes('ppControlDemo') || !html.includes('</html>')) throw Error(updateText('Downloaded version validation failed.','다운로드한 버전 검증에 실패했습니다.'));
+              if (online) throw Error(updateText('Connected: update cancelled.','연결 중이므로 업데이트를 취소했습니다.'));
+              sessionStorage.setItem('ppUpdateAttempt', version);
+              stream = await localUpdateHandle.createWritable();
+              await stream.write(html);
+              await stream.close(); stream = null;
+              updateNavigating = true;
+              location.reload();
+              return false;
+            } catch (e) {
+              if (stream) await stream.abort().catch(() => {});
+              sessionStorage.removeItem('ppUpdateAttempt');
+              updateMessage(updateText('Update not applied: ','업데이트 미적용: ') + e.message);
+              notice($('#updateStatus').textContent);
+              return false;
+            }
+          })();
+          try { return await localUpdateBusy; } finally { localUpdateBusy = null; }
+        }
+        async function applyUpdate() {
           if (!updateAvailable) return true;
           if (online) {
             updateMessage(updateText("Disconnect before applying an update.", "업데이트 적용 전에 연결을 해제하세요."));
             return true;
           }
-          if (location.protocol === "file:" || !location.href.startsWith(updateHome)) {
-            updateMessage(updateText("Download the new HTML and replace this file. Local files cannot update themselves.", "새 HTML을 다운로드해 기존 파일을 교체하세요. 로컬 파일은 자동 덮어쓰기가 불가능합니다."));
+          if (location.protocol === 'file:') return applyLocalUpdate();
+          if (!location.href.startsWith(updateHome)) {
+            updateMessage(updateText("Download the new HTML or use the official hosted page.", "새 HTML을 다운로드하거나 공식 웹페이지를 사용하세요."));
             return true;
           }
           try {
@@ -5482,6 +5573,8 @@ function fixture() {
           return false;
         }
         async function checkForUpdate(manual = false) {
+          if (updateNavigating) return false;
+          if (localUpdateBusy) return localUpdateBusy;
           if (window.ppDemoMode) { updateMessage(updateText("Sample demo — update checks are disabled.", "샘플 데모에서는 업데이트 확인을 하지 않습니다.")); return true; }
           if (!manual && config.updateMode === 'off') return true;
           if (updateChecking) return updateChecking;
@@ -5518,6 +5611,14 @@ function fixture() {
           if (!['auto','notify','off'].includes(config.updateMode)) config.updateMode = 'notify';
           $("#updateSettings").innerHTML = `<label>${updateText('Updates','업데이트')}<select id="updateMode"><option value="auto">${updateText('Automatically apply before connecting','연결 전에 자동 적용')}</option><option value="notify">${updateText('Notify only','알림만')}</option><option value="off">${updateText('Do not check','확인 안 함')}</option></select></label><p id="updateStatus" class="muted" role="status"></p><button type="button" id="checkUpdate">${updateText('Check now','지금 확인')}</button> <button type="button" id="applyUpdate" hidden>${updateText('Apply update','업데이트 적용')}</button> <a id="updateDownload" hidden download="propresenter_web_control.html">${updateText('Download HTML','HTML 다운로드')}</a> · <a href="https://github.com/gurcks8989/Propresenter-Web-Control/blob/main/CHANGELOG.md" target="_blank" rel="noopener">${updateText('Changelog','변경 내역')}</a>`;
           $("#updateMode").value = config.updateMode;
+          const authorize = document.createElement('button');
+          authorize.type = 'button'; authorize.id = 'authorizeFileUpdate';
+          authorize.textContent = updateText('Authorize file update','파일 업데이트 권한 승인');
+          authorize.onclick = authorizeLocalUpdate;
+          const pathNote = document.createElement('p');
+          pathNote.className = 'muted'; pathNote.textContent = fixedUpdatePath + ' · ' + updateText('Select this exact file. The browser cannot verify the selected absolute path.','이 파일을 직접 선택하세요. 브라우저는 선택 파일의 절대 경로를 확인할 수 없습니다.');
+          $('#updateSettings').append(pathNote, authorize);
+          authorize.disabled = window.ppDemoMode || location.protocol !== 'file:';
           $("#updateMode").onchange = () => {
             config.updateMode = $("#updateMode").value;
             try { localStorage.setItem('ppControlDemo', JSON.stringify(config)); } catch { updateMessage(updateText('Could not save update preference.','업데이트 설정을 저장하지 못했습니다.')); }
@@ -5525,7 +5626,113 @@ function fixture() {
           $("#checkUpdate").onclick = () => checkForUpdate(true);
           $("#applyUpdate").onclick = applyUpdate;
         }
+        function setupSlideExport() {
+          const label = (en, ko) => language === 'ko' ? ko : en;
+          const dialog = document.createElement('dialog');
+          dialog.id = 'slideExportDialog';
+          dialog.style.cssText = 'width:min(440px,90vw);max-height:85vh;overflow:auto';
+          dialog.innerHTML = `<h2>${label('Export slides','슬라이드 내보내기')}</h2><p id="exportTitle"></p><label>${label('Format','저장 형식')}<select id="exportFormat"><option value="png">${label('One slide image (.png)','슬라이드 이미지 (.png)')}</option><option value="pdf">${label('All slides — Print / Save as PDF','전체 슬라이드 — 인쇄 / PDF 저장')}</option><option value="txt">${label('All slide text (.txt)','전체 슬라이드 텍스트 (.txt)')}</option></select></label><label id="exportSlideLabel">${label('Slide','슬라이드')}<select id="exportSlideIndex"></select></label><p class="muted">${label('Exports API thumbnails, not the composited live output. PDF opens a print window. Text includes only text supplied by the API.','API 썸네일 기준이며 배경이 합성된 실제 송출 화면은 아닙니다. PDF는 인쇄 창에서 저장합니다. 텍스트는 API가 제공한 내용만 포함합니다.')}</p><p id="exportProgress" role="status"></p><div class="actions"><button type="button" id="cancelSlideExport">${label('Close','닫기')}</button><button type="button" id="saveSlideExport">${label('Export','내보내기')}</button></div>`;
+          document.body.append(dialog);
+          let snapshot = null, busy = false;
+          const status = message => $('#exportProgress').textContent = message;
+          const safeName = text => String(text || 'slides').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0,100);
+          const download = (blob, filename) => {
+            const url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+          };
+          const imageFor = async (slide, urls) => {
+            let url;
+            if (window.ppDemoMode && window.demoThumbnail) url = window.demoThumbnail(slide.url);
+            else {
+              const response = await fetch(slide.url, {signal:AbortSignal.timeout(15000)});
+              if (!response.ok) throw Error('HTTP ' + response.status);
+              const blob = await response.blob();
+              if (!blob.type.startsWith('image/')) throw Error(label('Not an image response','이미지 응답이 아닙니다'));
+              url = URL.createObjectURL(blob); urls.push(url);
+            }
+            const img = new Image();
+            img.src = url; await img.decode();
+            return img;
+          };
+          $('#openSlideExport').title = label('Export','내보내기');
+          $('#openSlideExport').setAttribute('aria-label', label('Export','내보내기'));
+          $('#openSlideExport').classList.remove('icon-only');
+          $('#openSlideExport').classList.add('icon-text');
+          const exportCaption = document.createElement('span');
+          exportCaption.textContent = label('Export','내보내기');
+          $('#openSlideExport').append(exportCaption);
+          $('#openSlideExport').onclick = () => {
+            if (busy) { dialog.showModal(); return; }
+            if (!S.slides.length || !uid(S.p) || hideBibleSlides()) {
+              notice(label('Select a presentation with slides first.','먼저 슬라이드가 있는 프레젠테이션을 선택하세요.')); return;
+            }
+            // Freeze selection and URLs so polling or browsing cannot mix presentations.
+            snapshot = {title:name(S.p) || 'slides', slides:S.slides.map(s => ({index:s.index, group:s.group || '', text:s.slide.text || '', url:base + thumbnailPath(s.index)}))};
+            $('#exportTitle').textContent = snapshot.title;
+            $('#exportSlideIndex').replaceChildren(...snapshot.slides.map((s,i) => new Option(`${i+1} · ${s.group}`, String(i))));
+            $('#exportSlideIndex').value = String(Math.max(0, snapshot.slides.findIndex(s => uid(S.p) === S.currentId && s.index === S.current)));
+            status(''); dialog.showModal();
+          };
+          $('#exportFormat').onchange = () => { $('#exportSlideLabel').hidden = $('#exportFormat').value !== 'png'; };
+          $('#cancelSlideExport').onclick = () => dialog.close();
+          dialog.addEventListener('click', e => {
+            const r=dialog.getBoundingClientRect();
+            if(e.target===dialog && (e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom)) dialog.close();
+          });
+          $('#saveSlideExport').onclick = async () => {
+            if (busy || !snapshot) return;
+            const data=snapshot, format=$('#exportFormat').value, index=Number($('#exportSlideIndex').value);
+            const urls=[];
+            let printWindow=null;
+            busy=true; $('#saveSlideExport').disabled=true;
+            try {
+              if (format === 'txt') {
+                const content = data.slides.map(s => s.text).filter(text => String(text).trim()).join('\r\n\r\n');
+                download(new Blob(['\uFEFF',content], {type:'text/plain;charset=utf-8'}), safeName(data.title)+'.txt');
+              } else if (format === 'png') {
+                status(label('Preparing image…','이미지 준비 중…'));
+                const img=await imageFor(data.slides[index],urls), canvas=document.createElement('canvas');
+                canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+                canvas.getContext('2d').drawImage(img,0,0);
+                const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+                if(!blob) throw Error(label('Image conversion failed','이미지 변환 실패'));
+                download(blob,`${safeName(data.title)}-${index+1}.png`);
+              } else {
+                printWindow=window.open('about:blank','_blank');
+                if(!printWindow) throw Error(label('Allow pop-ups to export PDF.','PDF 저장을 위해 팝업을 허용하세요.'));
+                printWindow.opener=null;
+                const doc=printWindow.document;
+                doc.title=data.title;
+                const style=doc.createElement('style');
+                style.textContent='@page{size:A4 landscape;margin:10mm}body{margin:0;font-family:system-ui;background:#eee}section{height:180mm;break-after:page;display:flex;align-items:center;justify-content:center;background:white}section:last-child{break-after:auto}img{max-width:100%;max-height:100%;object-fit:contain}header{padding:16px}@media print{header{display:none}body{background:white}}';
+                doc.head.append(style);
+                const header=doc.createElement('header'); header.textContent=label('Preparing slides…','슬라이드 준비 중…'); doc.body.append(header);
+                for(let i=0;i<data.slides.length;i++) {
+                  if(printWindow.closed) throw Error(label('Print window closed','인쇄 창을 닫았습니다'));
+                  status(`${i+1} / ${data.slides.length}`);
+                  const img=await imageFor(data.slides[i],urls);
+                  const section=doc.createElement('section');section.append(doc.adoptNode(img));doc.body.append(section);
+                }
+                header.textContent=label('Choose “Save as PDF” in the print dialog. ','인쇄 창에서 “PDF로 저장”을 선택하세요. ');
+                const button=doc.createElement('button'); button.textContent=label('Print / Save PDF','인쇄 / PDF 저장');
+                button.onclick=()=>printWindow.print();header.append(button);
+                printWindow.addEventListener('beforeunload',()=>urls.forEach(url=>URL.revokeObjectURL(url)),{once:true});
+                printWindow.focus();
+              }
+              status(format==='pdf' ? label('Ready. Use the print button in the new window.','준비 완료. 새 창의 인쇄 / PDF 저장 버튼을 누르세요.') : label('Download requested.','파일 다운로드를 요청했습니다.'));
+            } catch(e) {
+              if(printWindow && !printWindow.closed) printWindow.close();
+              urls.forEach(url=>URL.revokeObjectURL(url));
+              status(label('Export failed: ','내보내기 실패: ')+e.message);
+            } finally {
+              if(format!=='pdf') urls.forEach(url=>URL.revokeObjectURL(url));
+              busy=false; $('#saveSlideExport').disabled=false;
+            }
+          };
+        }
         async function boot() {
+          setupSlideExport();
           setupUpdates();
           if (!(await checkForUpdate())) return;
           try {

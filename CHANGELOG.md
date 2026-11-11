@@ -3,6 +3,15 @@
 Release history is tracked here rather than in the application's visible branding.
 Versions follow semantic versioning and match the VERSION file and Git tags.
 
+## 0.1.7 — 2026-11-11 (Preview)
+
+- Add a localized Export button in the top toolbar: one-slide PNG, all-slide print/save-as-PDF, and plain-text export without group names or slide indices.
+- Layer slide and background thumbnails in a single preview. Opaque slide thumbnails may obscure the background; this is not a composited output feed.
+- Localize the Live button and presentation status badges.
+- Release prepared without running tests or controlling live equipment, at the user's request. Export and preview changes remain untested.
+
+- Add opt-in local file updates before connection for `C:\propresenter_web_control\propresenter_web_control.html`: file-picker consent, persisted file handle, permission checks, downloaded version validation, and reload only after a successful write. User confirmation is required for the selected absolute path because browsers do not expose it. No live equipment testing; Windows browser permission persistence remains to be validated.
+
 ## 0.1.6 — 2026-10-18 (Preview)
 
 - Show already-active media from server state; when only media is active, display its thumbnail in the large upper preview. This is not a composited output feed.
