@@ -3,6 +3,12 @@
 Release history is tracked here rather than in the application's visible branding.
 Versions follow semantic versioning and match the VERSION file and Git tags.
 
+## 0.1.8 — 2026-11-11 (Preview)
+
+- Explicitly clicking Apply update now disconnects the web controller and cancels pending requests before applying the update, without sending output-clear or stop commands. The disconnected state is retained; reconnect manually afterward.
+- Automatic checks continue to defer updates while connected. Duplicate apply clicks are guarded during file writes and navigation.
+- No tests or live equipment actions performed, at the user's request.
+
 ## 0.1.7 — 2026-11-11 (Preview)
 
 - Add a localized Export button in the top toolbar: one-slide PNG, all-slide print/save-as-PDF, and plain-text export without group names or slide indices.
