@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>ProPresenter Web Control</title>
-    <meta name="application-version" content="0.1.8" />
+    <meta name="application-version" content="0.1.9" />
     <link
       rel="icon"
       type="image/x-icon"
@@ -2009,7 +2009,7 @@
     </dialog>
     <dialog id="settingsDialog">
       <h2>연결 · 화면 설정</h2>
-      <p class="muted">Version 0.1.8 · Preview</p>
+      <p class="muted">Version 0.1.9 · Preview</p>
       <section id="updateSettings"></section>
       <label class="field"
         ><span>Language / 언어</span
@@ -5575,6 +5575,11 @@ function fixture() {
             updateMessage(updateText('Automatic updates are deferred while connected.','연결 중에는 자동 업데이트를 보류합니다.'));
             return true;
           }
+          if (window.ppLauncherMode) {
+            updateNavigating = true;
+            location.reload();
+            return false;
+          }
           if (location.protocol === 'file:') return applyLocalUpdate();
           if (!location.href.startsWith(updateHome)) {
             updateMessage(updateText("Download the new HTML or use the official hosted page.", "새 HTML을 다운로드하거나 공식 웹페이지를 사용하세요."));
@@ -5641,7 +5646,12 @@ function fixture() {
           authorize.onclick = authorizeLocalUpdate;
           const pathNote = document.createElement('p');
           pathNote.className = 'muted'; pathNote.textContent = fixedUpdatePath + ' · ' + updateText('Select this exact file. The browser cannot verify the selected absolute path.','이 파일을 직접 선택하세요. 브라우저는 선택 파일의 절대 경로를 확인할 수 없습니다.');
-          $('#updateSettings').append(pathNote, authorize);
+          if (window.ppLauncherMode) {
+            pathNote.textContent = updateText('Launcher: loads the latest program at startup on macOS and Windows. No file-write permission required. Internet access is required. Connected sessions are not reloaded automatically.','실행기: macOS와 Windows에서 시작 시 최신 프로그램을 불러옵니다. 파일 쓰기 권한은 필요 없으며 인터넷 연결이 필요합니다. 연결 중에는 자동 새로고침하지 않습니다.');
+            $('#updateSettings').append(pathNote);
+          } else {
+            $('#updateSettings').append(pathNote, authorize);
+          }
           authorize.disabled = window.ppDemoMode || location.protocol !== 'file:';
           $("#updateMode").onchange = () => {
             config.updateMode = $("#updateMode").value;

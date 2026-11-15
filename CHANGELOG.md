@@ -3,6 +3,11 @@
 Release history is tracked here rather than in the application's visible branding.
 Versions follow semantic versioning and match the VERSION file and Git tags.
 
+## 0.1.9 — 2026-11-15 (Preview)
+
+- Add a macOS/Windows HTML launcher that fetches a versioned runtime at startup without writing local files. Keeps the local page origin and settings; requires internet access and a compatible published manifest. While connected, new code is not injected automatically. Device network permissions remain browser-dependent.
+- Launcher mode hides Windows-specific file authorization settings and reloads through the launcher when applying updates. Isolated mock tests passed for startup, validation failures, and disconnect-before-reload. Actual browser/device behavior remains unverified; no live device actions performed.
+
 ## 0.1.8 — 2026-11-11 (Preview)
 
 - Explicitly clicking Apply update now disconnects the web controller and cancels pending requests before applying the update, without sending output-clear or stop commands. The disconnected state is retained; reconnect manually afterward.

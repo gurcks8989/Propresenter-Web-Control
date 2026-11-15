@@ -4,7 +4,11 @@ A single-file, bilingual (English / Korean) browser controller for a local ProPr
 
 ## Getting started
 
-Current preview: **v0.1.8**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+Current preview: **v0.1.9**. Download packaged files and read release notes on the [Releases page](https://github.com/gurcks8989/Propresenter-Web-Control/releases). This is a prerelease; test with your own setup before production use.
+
+### Automatically updated HTML launcher (macOS / Windows)
+
+Download `propresenter_launcher.html` from the release and open it instead of the old standalone HTML. It loads the latest published runtime at startup without modifying local files or requesting file-write permission. Internet access is required; browser permissions for local-device access are separate. No automatic reload occurs during a connection. Clicking Apply update disconnects the controller before reloading; reconnect afterward. Existing standalone files do not become launchers automatically. Mock tests passed; actual browser/device compatibility has not been verified.
 
 **[Open ProPresenter Web Control](https://gurcks8989.github.io/Propresenter-Web-Control/)**
 

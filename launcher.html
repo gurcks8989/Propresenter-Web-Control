@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ProPresenter Web Control</title>
+<style>body{margin:0;background:#1d1e22;color:#eee;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{max-width:560px;padding:32px}p{line-height:1.6;color:#c0c5ce}button{padding:10px 18px;background:#343841;color:white;border:1px solid #687080;border-radius:6px;cursor:pointer}</style></head>
+<body><main><h1>ProPresenter Web Control</h1><p id="status" role="status">Loading the latest version…</p><button id="retry" hidden>Retry</button><p id="note">An internet connection is required. This launcher does not modify local files.</p></main>
+<script>
+(() => {
+  const home = 'https://gurcks8989.github.io/Propresenter-Web-Control/';
+  let ko = false;
+  try { ko = JSON.parse(localStorage.getItem('ppControlV9') || '{}').language === 'ko'; } catch {}
+  const text = (en, kr) => ko ? kr : en;
+  document.documentElement.lang = ko ? 'ko' : 'en';
+  const status = document.getElementById('status'), retry = document.getElementById('retry');
+  retry.textContent = text('Retry','다시 시도');
+  document.getElementById('note').textContent = text('Internet access is required. No local files are modified. Device network permissions are separate.','인터넷 연결이 필요합니다. 로컬 파일은 수정하지 않습니다. 장비 네트워크 접근 권한은 별개입니다.');
+  let loading = false;
+  async function start() {
+    if (loading) return;
+    loading = true; retry.hidden = true;
+    status.textContent = text('Loading the latest version…','최신 버전을 불러오는 중…');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(home + 'update.json?t=' + Date.now(), {cache:'no-store', signal:controller.signal});
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const manifest = await response.json();
+      if (!/^\d+\.\d+\.\d+$/.test(manifest.version) || manifest.runtime !== `runtime-${manifest.version}.html`) throw Error(text('A launcher-compatible release has not been published yet.','실행기를 지원하는 버전이 아직 게시되지 않았습니다.'));
+      const app = await fetch(home + manifest.runtime, {cache:'no-store', signal:controller.signal});
+      if (!app.ok) throw Error('HTTP ' + app.status);
+      const source = await app.text();
+      const parsed = new DOMParser().parseFromString(source, 'text/html');
+      if (parsed.querySelector('meta[name="application-version"]')?.content !== manifest.version || !source.includes('ppLauncherMode') || !source.includes('</html>')) throw Error(text('Version validation failed.','버전 검증에 실패했습니다.'));
+      // Replace this document in memory, keeping the local origin and saved settings.
+      // Never write the launcher file or inject untrusted manifest URLs.
+      window.ppLauncherMode = true;
+      document.open(); document.write(source); document.close();
+    } catch (error) {
+      status.textContent = text('Unable to load the program. No device connection was attempted. ','프로그램을 불러오지 못했습니다. 장비 연결은 시도하지 않았습니다. ') + (error.name === 'AbortError' ? text('Request timed out.','요청 시간이 초과되었습니다.') : error.message);
+      retry.hidden = false;
+    } finally { clearTimeout(timer); loading = false; }
+  }
+  retry.onclick = start;
+  start();
+})();
+</script></body></html>

@@ -67,5 +67,7 @@ fs.writeFileSync(path.join(root, 'docs/live.html'), localizeBanner(live));
 fs.writeFileSync(path.join(root, 'docs/index.html'), localizeBanner(live));
 fs.writeFileSync(path.join(root, 'docs/control.html'), source);
 const version = source.match(/name="application-version" content="([^"]+)"/)[1];
-fs.writeFileSync(path.join(root, 'docs/update.json'), JSON.stringify({version}, null, 2) + '\n');
+fs.writeFileSync(path.join(root, `docs/runtime-${version}.html`), source);
+fs.copyFileSync(path.join(root, 'launcher.html'), path.join(root, 'docs/launcher.html'));
+fs.writeFileSync(path.join(root, 'docs/update.json'), JSON.stringify({version, runtime:`runtime-${version}.html`}, null, 2) + '\n');
 fs.writeFileSync(path.join(root, 'docs/.nojekyll'), '');
